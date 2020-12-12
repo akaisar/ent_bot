@@ -18,10 +18,22 @@ bot = telebot.TeleBot(token)
 def command_start_handler(message):
     cid = message.chat.id
     bot.send_chat_action(cid, 'typing')
-    markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    button_geo = types.KeyboardButton(text='send location', request_location=True)
-    markup.add(button_geo)
+    # markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    # button_geo = types.KeyboardButton(text='send location', request_location=True)
+    # markup.add(button_geo)
     bot.send_message(cid, 'Привет, здесь ты можешь бесплатно писать пробники ент', reply_markup=markup)
+    bot.send_message(cid, 'Чтобы начать нажмите кнопку /test', reply_markup=markup)
+
+
+@bot.message_handler(commands=['test'])
+def command_start_handler(message):
+    cid = message.chat.id
+    bot.send_chat_action(cid, 'typing')
+    # markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+    # button_geo = types.KeyboardButton(text='send location', request_location=True)
+    # markup.add(button_geo)
+    bot.send_message(cid, 'Аружан самая красивая девушка на свете и я ее люблю', reply_markup=markup)
+    bot.send_message(cid, 'У нее большое сердце и она меня простит', reply_markup=markup)
 
 
 @bot.message_handler(content_types=["text"])
