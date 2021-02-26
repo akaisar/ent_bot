@@ -105,7 +105,7 @@ async def start_test(message: types.Message):
                 continue
             quizzes_with_topic.append(quiz)
     random.shuffle(quizzes_with_topic)
-    for i in range(min(len(quizzes_with_topic), 20)):
+    for i in range(min(len(quizzes_with_topic), 5)):
         quiz = quizzes_with_topic[i]
         msg = await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
                                   is_anonymous=False, options=quiz.options, type="quiz",
@@ -146,12 +146,11 @@ async def msg_with_poll(message: types.Message):
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
     quiz_id = quizzes_ids_connection[quiz_answer.poll_id]
+    quizzes_number = 5
     for student in students:
         if student.telegram_id == quiz_answer.user.id:
             student.completed_quizzes.append(quiz_answer.poll_id)
             is_answer_correct = False
-            print(quiz_answer.option_ids[0])
-            print("poll_id ", quiz_answer.poll_id)
             for a in quizzes:
                 for topic, quiz in a.items():
                     if quiz.quiz_id == quiz_id:
@@ -160,12 +159,13 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                             is_answer_correct = True
                             break
             current_quiz_for_user[student.telegram_id].append(is_answer_correct)
-            if len(current_quiz_for_user[student.telegram_id]) == 2:
+            if len(current_quiz_for_user[student.telegram_id]) == quizzes_number:
                 correct_ans = 0
                 for quiz in current_quiz_for_user[student.telegram_id]:
                     if quiz:
                         correct_ans += 1
-                await bot.send_message(chat_id=student.telegram_id, text=f"Вы ответили правильно на {correct_ans} из 2")
+                await bot.send_message(chat_id=student.telegram_id, text=f"Вы ответили правильно на {correct_ans} из {quizzes_number}")
+                current_quiz_for_user[student.telegram_id] = []
             await update_users()
 
 
