@@ -4,18 +4,25 @@
 # dependencies
 import os
 import json
+import logging
 
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 from data.models import Quiz, MyEncoder
 import random
+
+logging.basicConfig(level=logging.INFO)
 
 # bot initialization
 token = os.getenv('API_BOT_TOKEN')
 admin_id = [int(i) for i in os.getenv('OWNER_ID').split()]
 bot = Bot(token=token)
 dp = Dispatcher(bot)
+dp.middleware.setup(LoggingMiddleware())
+
 db_group = -1001344868552
+
 quizzes = []  # здесь хранится информация о викторинах
 topics = ["Physics", "Math"]
 
@@ -34,9 +41,9 @@ def load_data():
                         owner_id=a["owner"]
                     )})
         else:
-            print("NO DATA")
+            logging.warning('Database is empty')
 
-    print("succces")
+    logging.info("Bot is Up")
 
 
 async def push_data():
@@ -44,6 +51,7 @@ async def push_data():
         f.write(json.dumps(quizzes, cls=MyEncoder))
     with open('data.txt', "rb") as a:
         await bot.send_document(chat_id=db_group, document=a)
+    logging.info("new question added")
 
 
 @dp.message_handler(commands=["start"])
