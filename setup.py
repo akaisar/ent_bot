@@ -58,6 +58,7 @@ async def push_data():
 
 
 async def update_users():
+    print("update users")
     with open('data_users.txt', 'w') as f:
         f.write(json.dumps(students, cls=MyEncoder))
     with open('data_users.txt', 'rb') as a:
@@ -140,9 +141,10 @@ async def msg_with_poll(message: types.Message):
 
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
-    print(quiz_answer.user)
+    print("get ans")
+    print(quiz_answer)
     for student in students:
-        if student.telegram_id == quiz_answer.user:
+        if student.telegram_id == quiz_answer.user.id:
             student.completed_quizzes.append(quiz_answer.poll_id)
             await update_users()
 
