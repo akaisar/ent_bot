@@ -5,48 +5,52 @@
 import os
 import json
 
-# from flask import Flask, request
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import InputFile, Message
-from aiogram.utils import deep_linking
+
 from data.models import Quiz, MyEncoder
 import random
 
 # bot initialization
 token = os.getenv('API_BOT_TOKEN')
-admin_id = int(os.getenv('OWNER_ID'))
+admin_id = [int(i) for i in os.getenv('OWNER_ID').split()]
 bot = Bot(token=token)
 dp = Dispatcher(bot)
-
+db_group = -1001344868552
 quizzes = []  # здесь хранится информация о викторинах
 topics = ["Physics", "Math"]
 
 
 def load_data():
     with open('data.txt') as f:
-        for c in json.loads(f.read()):
-            for b, a in c.items():
-                quizzes.append({b: Quiz(
-                    quiz_id=a["quiz_id"],
-                    question=a["question"],
-                    options=a["options"],
-                    correct_option_id=a["correct_option_id"],
-                    owner_id=a["owner"]
-                )})
+        data = f.read()
+        if data != "":
+            for c in json.loads(data):
+                for b, a in c.items():
+                    quizzes.append({b: Quiz(
+                        quiz_id=a["quiz_id"],
+                        question=a["question"],
+                        options=a["options"],
+                        correct_option_id=a["correct_option_id"],
+                        owner_id=a["owner"]
+                    )})
+        else:
+            print("NO DATA")
+
     print("succces")
 
 
 async def push_data():
     with open('data.txt', 'w') as f:
         f.write(json.dumps(quizzes, cls=MyEncoder))
-    a = open("data.txt", "rb")
-    result: Message = await bot.send_document(chat_id=617094998, document=a)
+    with open('data.txt', "rb") as a:
+        await bot.send_document(chat_id=db_group, document=a)
 
 
 @dp.message_handler(commands=["start"])
 async def cmd_start(message: types.Message):
+    print(message.from_user)  # TODO: Remove
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    if message.from_user.id == admin_id:
+    if message.from_user.id in admin_id:
         poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
                                                request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
     poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
@@ -88,7 +92,7 @@ async def action_cancel(message: types.Message):
 
 @dp.message_handler(content_types=["poll"])
 async def msg_with_poll(message: types.Message):
-    if not message.from_user.id == admin_id:
+    if not message.from_user.id in admin_id:
         return
     if message.poll.type != "quiz":
         await message.reply("Извините, я принимаю только викторины (quiz)!")
