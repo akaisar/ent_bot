@@ -5,10 +5,8 @@
 import os
 import json
 
-# from flask import Flask, request
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.types import InputFile, Message
-from aiogram.utils import deep_linking
+
 from data.models import Quiz, MyEncoder
 import random
 
