@@ -4,29 +4,22 @@
 # dependencies
 import os
 import json
-import logging
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 from data.models import Quiz, MyEncoder, Student
 import random
-
-logging.basicConfig(level=logging.INFO)
 
 # bot initialization
 token = os.getenv('API_BOT_TOKEN')
 admin_id = [int(i) for i in os.getenv('OWNER_ID').split()]
 bot = Bot(token=token)
 dp = Dispatcher(bot)
-dp.middleware.setup(LoggingMiddleware())
-
 db_group = -1001344868552
-
 quizzes = []  # информация о викторинах
 students = []  # информация о студентах
+quizzes_ids_connection = {}
 current_quiz_for_user = {}  # викторины которые пользователь проходит в данный момент
-
 topics = ["Physics", "Math"]
 
 
@@ -44,9 +37,18 @@ def load_data():
                         owner_id=a["owner"]
                     )})
         else:
-          logging.warning('Database is empty')
-
-    logging.info("Bot is Up")
+            print("NO DATA")
+    with open('data_users.txt') as f:
+        data = f.read()
+        if data != "":
+            for c in json.loads(data):
+                students.append(
+                    Student(
+                        telegram_id=c["telegram_id"],
+                        completed_quizzes=c["completed_quizzes"],
+                    )
+                )
+    print("succces")
 
 
 async def push_data():
@@ -63,7 +65,6 @@ async def update_users():
         f.write(json.dumps(students, cls=MyEncoder))
     with open('data_users.txt', 'rb') as a:
         await bot.send_document(chat_id=db_group, document=a)
-    logging.info("new question added")
 
 
 @dp.message_handler(commands=["start"])
@@ -96,6 +97,7 @@ async def choose_topic(message: types.Message):
 
 @dp.message_handler(lambda message: topics.count(message.text) != 0)
 async def start_test(message: types.Message):
+    current_quiz_for_user[message.from_user.id] = []
     quizzes_with_topic = []
     for a in quizzes:
         for topic, quiz in a.items():
@@ -105,9 +107,10 @@ async def start_test(message: types.Message):
     random.shuffle(quizzes_with_topic)
     for i in range(min(len(quizzes_with_topic), 20)):
         quiz = quizzes_with_topic[i]
-        await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
-                            is_anonymous=False, options=quiz.options, type="quiz",
-                            correct_option_id=quiz.correct_option_id)
+        msg = await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
+                                  is_anonymous=False, options=quiz.options, type="quiz",
+                                  correct_option_id=quiz.correct_option_id)
+        quizzes_ids_connection[msg.poll.id] = quiz.quiz_id
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
     await message.answer("Чтобы начать новый тест, нажмите на кнопку.", reply_markup=poll_keyboard)
@@ -142,13 +145,17 @@ async def msg_with_poll(message: types.Message):
 
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
+    quiz_id = quizzes_ids_connection[quiz_answer.poll_id]
     for student in students:
         if student.telegram_id == quiz_answer.user.id:
             student.completed_quizzes.append(quiz_answer.poll_id)
             is_answer_correct = False
+            print(quiz_answer.option_ids[0])
+            print("poll_id ", quiz_answer.poll_id)
             for a in quizzes:
                 for topic, quiz in a.items():
-                    if quiz.quiz_id == quiz_answer.poll_id:
+                    if quiz.quiz_id == quiz_id:
+                        print(quiz_id)
                         if quiz.correct_option_id == quiz_answer.option_ids[0]:
                             is_answer_correct = True
                             break
@@ -158,7 +165,7 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                 for quiz in current_quiz_for_user[student.telegram_id]:
                     if quiz:
                         correct_ans += 1
-                await bot.send_message(f"Вы ответили правильно на {correct_ans} из 2")
+                await bot.send_message(chat_id=student.telegram_id, text=f"Вы ответили правильно на {correct_ans} из 2")
             await update_users()
 
 
