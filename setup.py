@@ -41,6 +41,7 @@ def push_data():
 
 @dp.message_handler(commands=["start"])
 async def cmd_start(message: types.Message):
+    print(message.from_user)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     if message.from_user.id == admin_id:
         poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
