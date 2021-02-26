@@ -4,22 +4,30 @@
 # dependencies
 import os
 import json
+import logging
 
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 from data.models import Quiz, MyEncoder, Student
 import random
+
+logging.basicConfig(level=logging.INFO)
 
 # bot initialization
 token = os.getenv('API_BOT_TOKEN')
 admin_id = [int(i) for i in os.getenv('OWNER_ID').split()]
 bot = Bot(token=token)
 dp = Dispatcher(bot)
+dp.middleware.setup(LoggingMiddleware())
+
 db_group = -1001344868552
+
 quizzes = []  # информация о викторинах
 students = []  # информация о студентах
 quizzes_ids_connection = {}
 current_quiz_for_user = {}  # викторины которые пользователь проходит в данный момент
+
 topics = ["Physics", "Math"]
 
 
@@ -37,18 +45,9 @@ def load_data():
                         owner_id=a["owner"]
                     )})
         else:
-            print("NO DATA")
-    with open('data_users.txt') as f:
-        data = f.read()
-        if data != "":
-            for c in json.loads(data):
-                students.append(
-                    Student(
-                        telegram_id=c["telegram_id"],
-                        completed_quizzes=c["completed_quizzes"],
-                    )
-                )
-    print("succces")
+          logging.warning('Database is empty')
+
+    logging.info("Bot is Up")
 
 
 async def push_data():
@@ -65,6 +64,7 @@ async def update_users():
         f.write(json.dumps(students, cls=MyEncoder))
     with open('data_users.txt', 'rb') as a:
         await bot.send_document(chat_id=db_group, document=a)
+    logging.info("new question added")
 
 
 @dp.message_handler(commands=["start"])
