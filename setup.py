@@ -7,7 +7,7 @@ import json
 
 from aiogram import Bot, Dispatcher, executor, types
 
-from data.models import Quiz, MyEncoder
+from data.models import Quiz, MyEncoder, Student
 import random
 
 # bot initialization
@@ -17,11 +17,12 @@ bot = Bot(token=token)
 dp = Dispatcher(bot)
 db_group = -1001344868552
 quizzes = []  # здесь хранится информация о викторинах
+students = []  # здесь хранится информация о студентах
 topics = ["Physics", "Math"]
 
 
 def load_data():
-    with open('data.txt') as f:
+    with open('data_quizzes.txt') as f:
         data = f.read()
         if data != "":
             for c in json.loads(data):
@@ -35,21 +36,46 @@ def load_data():
                     )})
         else:
             print("NO DATA")
-
+    with open('data_users.txt') as f:
+        data = f.read()
+        if data != "":
+            for c in json.loads(data):
+                students.append(
+                    Student(
+                        telegram_id=c["telegram_id"],
+                        completed_quizzes=c["completed_quizzes"],
+                    )
+                )
     print("succces")
 
 
 async def push_data():
     print("asdasd")
-    with open('data.txt', 'w') as f:
+    with open('data_quizzes.txt', 'w') as f:
         f.write(json.dumps(quizzes, cls=MyEncoder))
-    with open('data.txt', "rb") as a:
+    with open('data_quizzes.txt', "rb") as a:
+        await bot.send_document(chat_id=db_group, document=a)
+
+
+async def update_users():
+    with open('data_users.txt', 'w') as f:
+        f.write(json.dumps(students, cls=MyEncoder))
+    with open('data_users.txt', 'rb') as a:
         await bot.send_document(chat_id=db_group, document=a)
 
 
 @dp.message_handler(commands=["start"])
 async def cmd_start(message: types.Message):
     print(message.from_user)  # TODO: Remove
+    student_exists = False
+    for student in students:
+        if student.telegram_id == message.from_user.id:
+            student_exists = True
+    if not student_exists:
+        students.append(
+            Student(telegram_id=message.from_user.id, completed_quizzes=[])
+        )
+        await update_users()
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     if message.from_user.id in admin_id:
         poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
@@ -111,6 +137,14 @@ async def msg_with_poll(message: types.Message):
     })
     await push_data()
 
+
+@dp.poll_answer_handler()
+async def handle_poll_answer(quiz_answer: types.PollAnswer):
+    print(quiz_answer.user)
+    for student in students:
+        if student.telegram_id == quiz_answer.user:
+            student.completed_quizzes.append(quiz_answer.poll_id)
+            await update_users()
 
 if __name__ == "__main__":
     load_data()

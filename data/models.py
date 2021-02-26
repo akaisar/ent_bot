@@ -1,6 +1,7 @@
 from typing import List
 from json import JSONEncoder
 
+
 class Quiz:
     type: str = "quiz"
 
@@ -14,6 +15,17 @@ class Quiz:
         self.winners: List[int] = []  # Список победителей
         self.chat_id: int = 0  # Чат, в котором опубликована викторина
         self.message_id: int = 0  # Сообщение с викториной (для закрытия)
+
+
+class User:
+    def __init__(self, telegram_id):
+        self.telegram_id: int = telegram_id # ID юзера телеграм
+
+
+class Student(User):
+    def __init__(self, completed_quizzes, telegram_id):
+        super().__init__(telegram_id)
+        self.completed_quizzes = completed_quizzes
 
 
 class MyEncoder(JSONEncoder):
