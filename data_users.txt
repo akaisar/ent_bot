@@ -1,1 +1,1 @@
-[{"telegram_id": 358270818, "completed_quizzes": []}]
+[{"telegram_id": 358270818, "completed_quizzes": ["5316670819500294286"]}]

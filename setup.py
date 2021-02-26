@@ -23,8 +23,10 @@ dp.middleware.setup(LoggingMiddleware())
 
 db_group = -1001344868552
 
-quizzes = []  # здесь хранится информация о викторинах
-students = []  # здесь хранится информация о студентах
+quizzes = []  # информация о викторинах
+students = []  # информация о студентах
+current_quiz_for_user = {}  # викторины которые пользователь проходит в данный момент
+
 topics = ["Physics", "Math"]
 
 
@@ -56,6 +58,7 @@ async def push_data():
 
 
 async def update_users():
+    print("update users")
     with open('data_users.txt', 'w') as f:
         f.write(json.dumps(students, cls=MyEncoder))
     with open('data_users.txt', 'rb') as a:
@@ -139,11 +142,25 @@ async def msg_with_poll(message: types.Message):
 
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
-    print(quiz_answer.user)
     for student in students:
-        if student.telegram_id == quiz_answer.user:
+        if student.telegram_id == quiz_answer.user.id:
             student.completed_quizzes.append(quiz_answer.poll_id)
+            is_answer_correct = False
+            for a in quizzes:
+                for topic, quiz in a.items():
+                    if quiz.quiz_id == quiz_answer.poll_id:
+                        if quiz.correct_option_id == quiz_answer.option_ids[0]:
+                            is_answer_correct = True
+                            break
+            current_quiz_for_user[student.telegram_id].append(is_answer_correct)
+            if len(current_quiz_for_user[student.telegram_id]) == 2:
+                correct_ans = 0
+                for quiz in current_quiz_for_user[student.telegram_id]:
+                    if quiz:
+                        correct_ans += 1
+                await bot.send_message(f"Вы ответили правильно на {correct_ans} из 2")
             await update_users()
+
 
 if __name__ == "__main__":
     load_data()
