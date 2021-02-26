@@ -7,6 +7,7 @@ import json
 import logging
 
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 from data.models import Quiz, MyEncoder, Student
 import random
