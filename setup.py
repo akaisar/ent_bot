@@ -7,8 +7,10 @@ import json
 
 # from flask import Flask, request
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.types import InputFile, Message
 from aiogram.utils import deep_linking
 from data.models import Quiz, MyEncoder
+import random
 
 # bot initialization
 token = os.getenv('API_BOT_TOKEN')
@@ -34,9 +36,11 @@ def load_data():
     print("succces")
 
 
-def push_data():
+async def push_data():
     with open('data.txt', 'w') as f:
         f.write(json.dumps(quizzes, cls=MyEncoder))
+    a = open("data.txt", "rb")
+    result: Message = await bot.send_document(chat_id=617094998, document=a)
 
 
 @dp.message_handler(commands=["start"])
@@ -60,13 +64,21 @@ async def choose_topic(message: types.Message):
 
 @dp.message_handler(lambda message: topics.count(message.text) != 0)
 async def start_test(message: types.Message):
+    quizzes_with_topic = []
     for a in quizzes:
         for topic, quiz in a.items():
             if topic != message.text:
                 continue
-            await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
-                                is_anonymous=False, options=quiz.options, type="quiz",
-                                correct_option_id=quiz.correct_option_id)
+            quizzes_with_topic.append(quiz)
+    random.shuffle(quizzes_with_topic)
+    for i in range(min(len(quizzes_with_topic), 20)):
+        quiz = quizzes_with_topic[i]
+        await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
+                            is_anonymous=False, options=quiz.options, type="quiz",
+                            correct_option_id=quiz.correct_option_id)
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
+    await message.answer("Чтобы начать новый тест, нажмите на кнопку.", reply_markup=poll_keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Отмена")
@@ -93,7 +105,8 @@ async def msg_with_poll(message: types.Message):
         correct_option_id=message.poll.correct_option_id,
         owner_id=message.from_user.id)
     })
-    push_data()
+    await push_data()
+
 
 if __name__ == "__main__":
     load_data()
