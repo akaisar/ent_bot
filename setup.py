@@ -5,11 +5,12 @@
 import os
 import json
 import logging
+import requests
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
-from data.models import Quiz, MyEncoder, Student
+from data.models import Quiz, MyEncoder, Student, Question
 import random
 
 logging.basicConfig(level=logging.INFO)
@@ -24,6 +25,7 @@ dp.middleware.setup(LoggingMiddleware())
 db_group = -1001344868552
 
 quizzes = []  # информация о викторинах
+new_quizzes = []
 students = []  # информация о студентах
 quizzes_ids_connection = {}
 current_quiz_for_user = {}  # викторины которые пользователь проходит в данный момент
@@ -65,12 +67,14 @@ async def push_data():
         await bot.send_document(chat_id=db_group, document=a)
     logging.info("new data added")
 
+
 async def update_users():
     with open('data_users.txt', 'w') as f:
         f.write(json.dumps(students, cls=MyEncoder))
     with open('data_users.txt', 'rb') as a:
         await bot.send_document(chat_id=db_group, document=a)
     logging.info("new user added")
+
 
 @dp.message_handler(commands=["start"])
 async def cmd_start(message: types.Message):
@@ -129,7 +133,7 @@ async def action_cancel(message: types.Message):
 
 @dp.message_handler(content_types=["poll"])
 async def msg_with_poll(message: types.Message):
-    if not message.from_user.id in admin_id:
+    if message.from_user.id not in admin_id:
         return
     if message.poll.type != "quiz":
         await message.reply("Извините, я принимаю только викторины (quiz)!")
@@ -138,14 +142,38 @@ async def msg_with_poll(message: types.Message):
     # Сохраняем себе викторину в память
     question = message.poll.question
     topic = question.split()[0]
-    quizzes.append({topic: Quiz(
+    quiz = {topic: Quiz(
         quiz_id=message.poll.id,
         question=' '.join(question.split()[1:]),
         options=[o.text for o in message.poll.options],
         correct_option_id=message.poll.correct_option_id,
         owner_id=message.from_user.id)
-    })
+    }
+    new_quiz = Question(topic=topic,
+                        quiz_id=message.poll.id,
+                        question=' '.join(question.split()[1:]),
+                        options=[o.text for o in message.poll.options],
+                        correct_option_id=message.poll.correct_option_id,
+                        owner_id=message.from_user.id)
+    new_quizzes.append(new_quiz)
+    try:
+        for i in range(len(new_quizzes)):
+            new_quiz_upload(i)
+        new_quizzes.clear()
+    except Exception as e:
+        print(e)
+        logging.info("can't reach api, question upload failed will continue with next poll creation")
+
+    quizzes.append(quiz)
     await push_data()
+
+
+def new_quiz_upload(index: int):
+    a = json.dumps(new_quizzes[index], cls=MyEncoder)
+    b =json.loads(a)
+    r = requests.post('http://127.0.0.1:8000/quizDb', json=b)
+    print(b)
+    print(r.headers)
 
 
 @dp.poll_answer_handler()
@@ -169,7 +197,8 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                 for quiz in current_quiz_for_user[student.telegram_id]:
                     if quiz:
                         correct_ans += 1
-                await bot.send_message(chat_id=student.telegram_id, text=f"Вы ответили правильно на {correct_ans} из {quizzes_number}")
+                await bot.send_message(chat_id=student.telegram_id,
+                                       text=f"Вы ответили правильно на {correct_ans} из {quizzes_number}")
                 current_quiz_for_user[student.telegram_id] = []
             await update_users()
 
