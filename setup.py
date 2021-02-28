@@ -57,7 +57,16 @@ def load_data():
                         completed_quizzes=c["completed_quizzes"],
                     )
                 )
+
     logging.info("Bot is Up")
+
+
+async def load():
+    with open('api_response_get.txt', "w") as f:
+        w = load_from_database()
+        f.write(json.dumps(w.json(), cls=MyEncoder))
+    with open('api_response_get.txt', "rb") as j:
+        await bot.send_document(chat_id=db_group, document=j)
 
 
 async def push_data():
@@ -78,6 +87,7 @@ async def update_users():
 
 @dp.message_handler(commands=["start"])
 async def cmd_start(message: types.Message):
+    await load()
     logging.info(message.from_user)
     student_exists = False
     for student in students:
@@ -170,10 +180,14 @@ async def msg_with_poll(message: types.Message):
 
 def new_quiz_upload(index: int):
     a = json.dumps(new_quizzes[index], cls=MyEncoder)
-    b =json.loads(a)
+    b = json.loads(a)
     r = requests.post('http://127.0.0.1:8000/quizDb', json=b)
     print(b)
     print(r.headers)
+
+
+def load_from_database():
+    return requests.get('http://127.0.0.1:8000/quizDb')
 
 
 @dp.poll_answer_handler()
