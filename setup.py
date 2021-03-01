@@ -21,7 +21,7 @@ admin_id = [int(i) for i in os.getenv('OWNER_ID').split()]
 bot = Bot(token=token)
 dp = Dispatcher(bot)
 dp.middleware.setup(LoggingMiddleware())
-
+API_address = 'http://aldie1741.pythonanywhere.com/'
 db_group = -1001344868552
 
 quizzes = []  # информация о викторинах
@@ -181,13 +181,13 @@ async def msg_with_poll(message: types.Message):
 def new_quiz_upload(index: int):
     a = json.dumps(new_quizzes[index], cls=MyEncoder)
     b = json.loads(a)
-    r = requests.post('http://127.0.0.1:8000/quizDb', json=b)
+    r = requests.post(API_address + 'quizDb', json=b)
     print(b)
     print(r.headers)
 
 
 def load_from_database():
-    return requests.get('http://127.0.0.1:8000/quizDb')
+    return requests.get(API_address + 'quizDb')
 
 
 @dp.poll_answer_handler()
