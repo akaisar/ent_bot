@@ -2,6 +2,7 @@ from config import Config
 from data.models import Student, MyEncoder
 import requests
 import json
+import logging
 
 
 def read_user_from_file(file_name):
@@ -24,7 +25,7 @@ class UserService:
 
     def user_make_answer_for_quiz(self, telegram_id, is_option_correct, number):
         self.quizzes_for_user[telegram_id].append(is_option_correct)
-        print(f"User: {telegram_id}, answer on {len(self.quizzes_for_user[telegram_id])}")
+        logging.info(f"User: {telegram_id}, answer on {len(self.quizzes_for_user[telegram_id])}")
         if len(self.quizzes_for_user[telegram_id]) == number:
             correct_answer_number = 0
             for option in self.quizzes_for_user[telegram_id]:
