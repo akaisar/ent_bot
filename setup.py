@@ -19,7 +19,7 @@ dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
 quizzes_number = 20
-topics = ["История", "Грамотность_Чтения"]
+topics = ["История"]
 
 
 @dp.message_handler(commands=["start"])
