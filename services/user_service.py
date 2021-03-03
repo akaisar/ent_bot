@@ -22,8 +22,8 @@ class UserService:
     def user_start_new_quiz(self, telegram_id):
         self.quizzes_for_user[telegram_id] = []
 
-    def user_make_answer_for_quiz(self, telegram_id, is_answer_correct, number):
-        self.quizzes_for_user[telegram_id].append(is_answer_correct)
+    def user_make_answer_for_quiz(self, telegram_id, is_option_correct, number):
+        self.quizzes_for_user[telegram_id].append(is_option_correct)
         if len(self.quizzes_for_user[telegram_id]) == number:
             return [True, self.quizzes_for_user[telegram_id].sum()]
         else:

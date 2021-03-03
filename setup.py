@@ -2,18 +2,13 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # dependencies
-import os
-import json
 import logging
-import requests
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 from services import quiz_service, user_service
-from data.models import Quiz, MyEncoder, Student
 from config import Config
-import random
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,8 +19,6 @@ dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
 
-quizzes_ids_connection = {}
-current_quiz_for_user = {}  # викторины которые пользователь проходит в данный момент
 topics = ["История", "Грамотность_чтения"]
 
 
@@ -51,15 +44,13 @@ async def choose_topic(message: types.Message):
 
 @dp.message_handler(lambda message: topics.count(message.text) != 0)
 async def start_test(message: types.Message):
-    current_quiz_for_user[message.from_user.id] = []
-
     quizzes = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=5)
     for quiz in quizzes:
         msg = await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
                                   is_anonymous=False, options=quiz.options, type="quiz",
                                   correct_option_id=quiz.correct_option_id)
         quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
-
+    user_s.user_start_new_quiz(message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
     await message.answer("Чтобы начать новый тест, нажмите на кнопку.", reply_markup=poll_keyboard)
@@ -84,10 +75,10 @@ async def msg_with_poll(message: types.Message):
     question = message.poll.question
     try:
         quiz_s.push_quiz_to_api(topic=question.split()[0], quiz_id=message.poll.id,
-                                                  question=' '.join(question.split()[1:]),
-                                                  options=[o.text for o in message.poll.options],
-                                                  correct_option_id=message.poll.correct_option_id,
-                                                  owner_id=message.from_user.id)
+                                question=' '.join(question.split()[1:]),
+                                options=[o.text for o in message.poll.options],
+                                correct_option_id=message.poll.correct_option_id,
+                                owner_id=message.from_user.id)
     except Exception as e:
         print(e)
         logging.info("can't reach api, question upload failed will continue with next poll creation")
@@ -97,7 +88,11 @@ async def msg_with_poll(message: types.Message):
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
     quiz_id = quiz_s.get_old_id(quiz_answer.poll_id)
     quizzes_number = 5
-    data = user_s.complete_quiz(quiz_id=quiz_id, telegram_id=quiz_answer.user.id)
+    user_s.complete_quiz(quiz_id=quiz_id, telegram_id=quiz_answer.user.id)
+    data = user_s.user_make_answer_for_quiz(telegram_id=quiz_answer.user.id,
+                                            is_option_correct=quiz_s.is_option_correct(quiz_id=quiz_id,
+                                                                                       option=quiz_answer.option_ids[0])
+                                            , number=quizzes_number)
     if data[0]:
         await bot.send_message(chat_id=quiz_answer.user.id,
                                text=f"Вы ответили правильно на {data[1]} из {quizzes_number}")
