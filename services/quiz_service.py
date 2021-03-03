@@ -15,8 +15,6 @@ class QuizService:
     quizzes_ids_connection = {}
 
     def load_quizzes_from_topic(self, topic_name):
-        if topic_name in self.quizzes_from_topic:
-            return self.quizzes_from_topic[topic_name]
         quizzes = []
         data = get_request_from_api(f'quizDb/{topic_name}/')
         print(data.text)
