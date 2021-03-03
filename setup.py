@@ -19,7 +19,7 @@ dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
 
-topics = ["История", "Грамотность_чтения"]
+topics = ["История", "Грамотность_Чтения"]
 
 
 @dp.message_handler(commands=["start"])
@@ -45,11 +45,15 @@ async def choose_topic(message: types.Message):
 @dp.message_handler(lambda message: topics.count(message.text) != 0)
 async def start_test(message: types.Message):
     quizzes = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=5)
+    print(quizzes)
     for quiz in quizzes:
-        msg = await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
-                                  is_anonymous=False, options=quiz.options, type="quiz",
-                                  correct_option_id=quiz.correct_option_id)
-        quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
+        try:
+            msg = await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
+                                      is_anonymous=False, options=quiz.options, type="quiz",
+                                      correct_option_id=quiz.correct_option_id)
+            quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
+        except Exception as e:
+            print(e)
     user_s.user_start_new_quiz(message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text="Начать тест"))

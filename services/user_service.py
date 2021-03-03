@@ -25,7 +25,11 @@ class UserService:
     def user_make_answer_for_quiz(self, telegram_id, is_option_correct, number):
         self.quizzes_for_user[telegram_id].append(is_option_correct)
         if len(self.quizzes_for_user[telegram_id]) == number:
-            return [True, self.quizzes_for_user[telegram_id].sum()]
+            correct_answer_number = 0
+            for option in self.quizzes_for_user[telegram_id]:
+                if option:
+                    correct_answer_number += 1
+            return [True, correct_answer_number]
         else:
             return [False]
 
