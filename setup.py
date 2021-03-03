@@ -18,7 +18,7 @@ dp = Dispatcher(bot)
 dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
-
+quizzes_number = 20
 topics = ["История", "Грамотность_Чтения"]
 
 
@@ -44,7 +44,7 @@ async def choose_topic(message: types.Message):
 
 @dp.message_handler(lambda message: topics.count(message.text) != 0)
 async def start_test(message: types.Message):
-    quizzes = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=5)
+    quizzes = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=quizzes_number)
     print(quizzes)
     for quiz in quizzes:
         try:
@@ -91,7 +91,6 @@ async def msg_with_poll(message: types.Message):
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
     quiz_id = quiz_s.get_old_id(quiz_answer.poll_id)
-    quizzes_number = 5
     user_s.complete_quiz(quiz_id=quiz_id, telegram_id=quiz_answer.user.id)
     data = user_s.user_make_answer_for_quiz(telegram_id=quiz_answer.user.id,
                                             is_option_correct=quiz_s.is_option_correct(quiz_id=quiz_id,
