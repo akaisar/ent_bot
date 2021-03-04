@@ -21,7 +21,7 @@ dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
 local = Localization()
-quizzes_number = 3
+quizzes_number = 20
 
 topics = ["Қазақ тілі"]
 
