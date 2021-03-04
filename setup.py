@@ -60,7 +60,7 @@ async def start_test(message: types.Message):
             print(e)
     user_s.user_start_new_quiz(message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    # poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
+    poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
     await message.answer("Чтобы начать новый тест, нажмите на кнопку.", reply_markup=poll_keyboard)
 
 
@@ -102,10 +102,8 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                                                                        option=quiz_answer.option_ids[0])
                                             , number=quizzes_number)
     if data[0]:
-        poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
         await bot.send_message(chat_id=quiz_answer.user.id,
-                               text=f"Вы ответили правильно на {data[1]} из {quizzes_number}", )
+                               text=f"Вы ответили правильно на {data[1]} из {quizzes_number}", reply_)
 
 
 if __name__ == "__main__":
