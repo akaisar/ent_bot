@@ -3,8 +3,9 @@ from json import JSONEncoder
 
 
 class User:
-    def __init__(self, telegram_id):
+    def __init__(self, telegram_id, selected_language):
         self.telegram_id: int = telegram_id  # ID юзера телеграм
+        self.selected_language: str = selected_language  # Выбранный язык
 
 
 class Quiz:
@@ -23,8 +24,8 @@ class Quiz:
 
 
 class Student(User):
-    def __init__(self, completed_quizzes, telegram_id):
-        super().__init__(telegram_id)
+    def __init__(self, completed_quizzes, telegram_id, selected_language):
+        super().__init__(telegram_id=telegram_id, selected_language=selected_language)
         self.completed_quizzes = completed_quizzes
 
 

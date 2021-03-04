@@ -1,1 +1,1 @@
-[{"telegram_id": 358270818, "completed_quizzes": []}]
+[{"telegram_id": 358270818, "selected_language": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439 \u044f\u0437\u044b\u043a", "completed_quizzes": []}]

@@ -42,8 +42,19 @@ class UserService:
                 Student(
                     telegram_id=c["telegram_id"],
                     completed_quizzes=c["completed_quizzes"],
+                    selected_language=c["selected_language"]
                 )
             )
+
+    def set_user_language(self, telegram_id, selected_language):
+        for student in self.students:
+            if student.telegram_id == telegram_id:
+                student.selected_language = selected_language
+
+    def get_user_language(self, telegram_id):
+        for student in self.students:
+            if student.telegram_id == telegram_id:
+                return student.selected_language
 
     def post_user(self, telegram_id):
         for student in self.students:
@@ -51,6 +62,7 @@ class UserService:
                 return
         self.students.append(Student(
             telegram_id=telegram_id,
+            selected_language="Русский язык",
             completed_quizzes=[]
         ))
         write_users_to_file("data_users.txt", self.students)

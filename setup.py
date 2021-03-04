@@ -9,8 +9,8 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 
 from services import quiz_service, user_service
 from config import Config
+from localization.localization import Localization
 import random
-
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,7 +20,9 @@ dp = Dispatcher(bot)
 dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
-quizzes_number = 20
+local = Localization()
+quizzes_number = 3
+
 topics = ["Қазақ тілі"]
 
 
@@ -32,19 +34,32 @@ async def cmd_start(message: types.Message):
     if message.from_user.id in Config.ADMIN_IDS:
         poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
                                                request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
-    poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
-    await message.answer("Чтобы начать тестирование нажмите на кнопку ниже", reply_markup=poll_keyboard)
+    poll_keyboard.add(types.KeyboardButton(text="Қазақ"))
+    poll_keyboard.add(types.KeyboardButton(text="Русский"))
+    await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
 
 
-@dp.message_handler(lambda message: message.text == "Начать тест")
+@dp.message_handler(lambda message: local.check_text("languages", message.text))
+async def start_app(message: types.Message):
+    user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
+                                                               telegram_id=message.from_user.id,
+                                                               user_s=user_s)))
+    await message.answer(local.get_text(text="start message", telegram_id=message.from_user.id, user_s=user_s),
+                         reply_markup=poll_keyboard)
+
+
+@dp.message_handler(lambda message: local.check_text("start button", message.text))
 async def choose_topic(message: types.Message):
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for topic in topics:
         poll_keyboard.add(types.KeyboardButton(text=topic))
-    await message.answer("Выберете предмет", reply_markup=poll_keyboard)
+    await message.answer(local.get_text(text="select message", telegram_id=message.from_user.id,
+                                        user_s=user_s), reply_markup=poll_keyboard)
 
 
-@dp.message_handler(lambda message: topics.count(message.text) != 0)
+@dp.message_handler(lambda message: message.text in topics)
 async def start_test(message: types.Message):
     quizzes = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=quizzes_number)
     for quiz in quizzes:
@@ -60,14 +75,11 @@ async def start_test(message: types.Message):
             print(e)
     user_s.user_start_new_quiz(message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    poll_keyboard.add(types.KeyboardButton(text="Начать тест"))
-    await message.answer("Чтобы начать новый тест, нажмите на кнопку.", reply_markup=poll_keyboard)
-
-
-@dp.message_handler(lambda message: message.text == "Отмена")
-async def action_cancel(message: types.Message):
-    remove_keyboard = types.ReplyKeyboardRemove()
-    await message.answer("Действие отменено. Введите /start, чтобы начать заново.", reply_markup=remove_keyboard)
+    poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
+                                                               telegram_id=message.from_user.id,
+                                                               user_s=user_s)))
+    await message.answer(local.get_text(text="restart message", telegram_id=message.from_user.id,
+                                        user_s=user_s), reply_markup=poll_keyboard)
 
 
 @dp.message_handler(content_types=["poll"])
@@ -77,7 +89,6 @@ async def msg_with_poll(message: types.Message):
     if message.poll.type != "quiz":
         await message.reply("Извините, я принимаю только викторины (quiz)!")
         return
-
     # Сохраняем себе викторину в память
 
     question = message.poll.question
@@ -103,7 +114,9 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                             , number=quizzes_number)
     if data[0]:
         await bot.send_message(chat_id=quiz_answer.user.id,
-                               text=f"Вы ответили правильно на {data[1]} из {quizzes_number}")
+                               text=local.get_text(text="result message",
+                                                   telegram_id=quiz_answer.user.id,
+                                                   user_s=user_s).format(data[1], quizzes_number))
 
 
 if __name__ == "__main__":
