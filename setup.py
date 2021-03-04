@@ -103,7 +103,7 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                             , number=quizzes_number)
     if data[0]:
         await bot.send_message(chat_id=quiz_answer.user.id,
-                               text=f"Вы ответили правильно на {data[1]} из {quizzes_number}", reply_)
+                               text=f"Вы ответили правильно на {data[1]} из {quizzes_number}")
 
 
 if __name__ == "__main__":
