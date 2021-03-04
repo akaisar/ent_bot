@@ -31,9 +31,9 @@ async def cmd_start(message: types.Message):
     logging.info(message.from_user)
     user_s.post_user(telegram_id=message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    if message.from_user.id in Config.ADMIN_IDS:
-        poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
-                                               request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
+    # if message.from_user.id in Config.ADMIN_IDS:
+    #     poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
+    #                                            request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
     poll_keyboard.add(types.KeyboardButton(text="Қазақ"))
     poll_keyboard.add(types.KeyboardButton(text="Русский"))
     await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
