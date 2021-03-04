@@ -17,7 +17,7 @@ class Quiz:
         self.question: str = question  # Текст вопроса
         self.options: List[str] = [*options]  # "Распакованное" содержимое массива m_options в массив options
         self.correct_option_id: int = correct_option_id  # ID правильного ответа
-        self.owner: int = owner_id  # Владелец опроса
+        self.owner: int = 0  # Владелец опроса
         self.chat_id: int = 0  # Чат, в котором опубликована викторина
         self.message_id: int = 0  # Сообщение с викториной (для закрытия)
 

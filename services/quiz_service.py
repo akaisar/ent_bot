@@ -14,6 +14,7 @@ def get_request_from_api(suffix):
 class QuizService:
     quizzes_from_topic = {}
     quizzes_ids_connection = {}
+    correct_option_id = {}
 
     def load_quizzes_from_topic(self, topic_name):
         quizzes = []
@@ -75,7 +76,8 @@ class QuizService:
         print(json.dumps(quiz_json))
         print("post quiz to api")
         r = requests.post(Config.API_URL+'quizDb', json=json.loads(json.dumps(quiz_json)))
-        print(r)
+        logging.info(r)
+        return r
 
     def connect_ids(self, new_id, old_id):
         self.quizzes_ids_connection[new_id] = old_id
@@ -84,7 +86,15 @@ class QuizService:
         return self.quizzes_ids_connection[new_id]
 
     def is_option_correct(self, option, quiz_id):
-        for topic, quizzes in self.quizzes_from_topic.items():
-            for quiz in quizzes:
-                if quiz.quiz_id == quiz_id:
-                    return quiz.correct_option_id == option
+        return self.correct_option_id[quiz_id] == option
+
+    def post_correct_option_id(self, quiz_id, option_id):
+        self.correct_option_id[quiz_id] = option_id
+
+    @staticmethod
+    def shuffle_options(options, correct_option_id):
+        correct_option = options[correct_option_id]
+        random.shuffle(options)
+        for i in range(len(options)):
+            if options[i] == correct_option:
+                return options, i

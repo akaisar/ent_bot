@@ -58,4 +58,5 @@ class UserService:
     def complete_quiz(self, telegram_id, quiz_id):
         for student in self.students:
             if student.telegram_id == telegram_id:
-                student.completed_quizzes.append(quiz_id)
+                if quiz_id not in student.completed_quizzes:
+                    student.completed_quizzes.append(quiz_id)
