@@ -45,7 +45,6 @@ async def choose_topic(message: types.Message):
 @dp.message_handler(lambda message: topics.count(message.text) != 0)
 async def start_test(message: types.Message):
     quizzes = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=quizzes_number)
-    print(quizzes)
     for quiz in quizzes:
         try:
             msg = await bot.send_poll(chat_id=message.chat.id, question=quiz.question,

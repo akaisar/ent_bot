@@ -4,6 +4,7 @@ from ast import literal_eval
 import requests
 import json
 import random
+import logging
 
 
 def get_request_from_api(suffix):
@@ -17,9 +18,11 @@ class QuizService:
     def load_quizzes_from_topic(self, topic_name):
         quizzes = []
         data = get_request_from_api(f'quizDb/{topic_name}/')
-        print(data.text)
+        cnt_quizzes = 0
         for detail in json.loads(data.text):
-            print(detail)
+            if len(detail["options"].split("$")) < 2:
+                continue
+            cnt_quizzes += 1
             try:
                 quiz = Quiz(
                     topic=detail["topic"],
@@ -32,6 +35,8 @@ class QuizService:
                 quizzes.append(quiz)
             except Exception as e:
                 print(e)
+        logging.info(cnt_quizzes)
+        logging.info(len(quizzes))
         self.quizzes_from_topic[topic_name] = quizzes
         return quizzes
 
