@@ -45,7 +45,7 @@ class QuizService:
         random.shuffle(quizzes)
         if len(quizzes) == 0:
             return []
-        return quizzes[:min(number+1, len(quizzes))]
+        return quizzes[:min(number, len(quizzes))]
 
     def push_quiz_to_api(self, topic, quiz_id, question, options, correct_option_id, owner_id):
         quiz = Quiz(
