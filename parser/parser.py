@@ -11,25 +11,36 @@ transform_option = {
     "B": 1,
     "C": 2,
     "D": 3,
-    "E": 4
+    "E": 4,
+    "А": 0,
+    "С": 2,
+    "Е": 4,
+    "В": 1,
+    "Д": 3,
+    "б": 1,
 }
 
 
 def parser(file_name):
     with codecs.open(file_name, 'rb', 'utf-8') as f:
         data = f.read()
-        global questions, options, correct_options, transform_option
+        global questions, options, transform_option
         questions = re.findall(r"\d+\..+", data)
-        options = re.findall(r"[A-E]\).+", data)
-        correct_options_value = re.findall(r"\d+ [A-E]\)", data)
-        for c_option in correct_options_value:
-            id = re.findall(r"\d*", c_option)[0]
-            value = re.findall("[A-E]", c_option)[0]
-            correct_options[int(id) - 1] = transform_option[value]
+    with codecs.open(file_name, 'rb', 'utf-8') as f:
+        data2 = f.readlines()
+        for line in data2:
+            if line[0] in transform_option:
+                options.append(line)
+    # print(len(options))
+    with codecs.open("output.txt", "rb", "utf-8") as f:
+        data = f.readlines()
+        global correct_options
+        for i in range(len(data)):
+            correct_options[i] = transform_option[data[i][0]]
 
 
 def get_quizzes(file_name, topic_name):
-    global quizzes
+    # global quizzes
     parser(file_name)
     for i in range(len(questions)):
         quiz = {
@@ -42,10 +53,9 @@ def get_quizzes(file_name, topic_name):
             "chat_id": 1,
             "message_id": 1,
         }
-        print(quiz)
         r = requests.post(Config.API_URL + 'quizDb', json=json.loads(json.dumps(quiz)))
         print(r)
 
 
 if __name__ == "__main__":
-    get_quizzes("kazakh_language.txt", "Қазақ тілі")
+    get_quizzes("input.txt", "Қазақстан Тарихы")

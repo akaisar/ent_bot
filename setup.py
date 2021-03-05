@@ -23,7 +23,7 @@ quiz_s = quiz_service.QuizService()
 local = Localization()
 quizzes_number = 20
 
-topics = ["Қазақ тілі"]
+topics = ["Қазақ тілі", "Қазақстан Тарихы"]
 
 
 @dp.message_handler(commands=["start"])
