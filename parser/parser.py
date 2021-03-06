@@ -22,21 +22,27 @@ transform_option = {
 
 
 def parser(file_name):
-    with codecs.open(file_name, 'rb', 'utf-8') as f:
-        data = f.read()
-        global questions, options, transform_option
-        questions = re.findall(r"\d+\..+", data)
+    global questions, options, transform_option
+    # with codecs.open(file_name, 'rb', 'utf-8') as f:
+    #     data = f.read()
+    #
+    #     questions = re.findall(r"\d+\..+", data)
     with codecs.open(file_name, 'rb', 'utf-8') as f:
         data2 = f.readlines()
         for line in data2:
-            if line[0] in transform_option:
+            if line[0] in transform_option and line[1] == ")":
                 options.append(line)
-    # print(len(options))
+            elif len(line.split()) != 0:
+                questions.append(line)
+    for i in range(len(options)):
+        if i % 5 != transform_option[options[i][0]]:
+            print(i/5, options[i])
     with codecs.open("output.txt", "rb", "utf-8") as f:
         data = f.readlines()
         global correct_options
         for i in range(len(data)):
             correct_options[i] = transform_option[data[i][0]]
+
 
 
 def get_quizzes(file_name, topic_name):
@@ -45,17 +51,18 @@ def get_quizzes(file_name, topic_name):
     for i in range(len(questions)):
         quiz = {
             "topic": topic_name,
-            "question": "".join(re.split(r"\d+\.", questions[i])),
-            "options": "$".join(["".join(re.split(r"[A-E]\) ", option)) for option in options[i * 5:(i + 1) * 5]]),
+            "question": questions[i],
+            "options": "$".join([option[2:] for option in options[i * 5:(i + 1) * 5]]),
             "correct_option_id": correct_options[i],
             "owner": 0,
             "winners": "1",
             "chat_id": 1,
             "message_id": 1,
         }
+        print(quiz)
         r = requests.post(Config.API_URL + 'quizDb', json=json.loads(json.dumps(quiz)))
-        print(r)
+        print(i, r)
 
 
 if __name__ == "__main__":
-    get_quizzes("input.txt", "Қазақстан Тарихы")
+    get_quizzes("input2.txt", "Қазақстан Тарихы")

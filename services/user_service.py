@@ -19,9 +19,17 @@ class UserService:
     users = []
     students = []
     quizzes_for_user = {}
+    quiz_ids_for_user = {}
+
+    def get_quiz_id_for_user(self, telegram_id):
+        return self.quiz_ids_for_user[telegram_id][len(self.quizzes_for_user[telegram_id])]
+
+    def set_quiz_ids_for_user(self, quiz_ids, telegram_id):
+        self.quiz_ids_for_user[telegram_id] = quiz_ids
 
     def user_start_new_quiz(self, telegram_id):
         self.quizzes_for_user[telegram_id] = []
+        self.quiz_ids_for_user[telegram_id] = []
 
     def user_make_answer_for_quiz(self, telegram_id, is_option_correct, number):
         self.quizzes_for_user[telegram_id].append(is_option_correct)

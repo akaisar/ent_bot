@@ -6,7 +6,6 @@ import logging
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
-
 from services import quiz_service, user_service
 from config import Config
 from localization.localization import Localization
@@ -24,6 +23,16 @@ local = Localization()
 quizzes_number = 20
 
 topics = ["Қазақ тілі", "Қазақстан Тарихы"]
+
+
+async def send_poll(quiz, telegram_id):
+    options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
+                                                        correct_option_id=quiz.correct_option_id)
+    msg = await bot.send_poll(chat_id=telegram_id, question=quiz.question,
+                              is_anonymous=False, options=options, type="quiz",
+                              correct_option_id=correct_option_id)
+    quiz_s.post_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
+    quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
 
 
 @dp.message_handler(commands=["start"])
@@ -61,25 +70,17 @@ async def choose_topic(message: types.Message):
 
 @dp.message_handler(lambda message: message.text in topics)
 async def start_test(message: types.Message):
-    quizzes = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=quizzes_number)
-    for quiz in quizzes:
-        try:
-            options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
-                                                                correct_option_id=quiz.correct_option_id)
-            msg = await bot.send_poll(chat_id=message.chat.id, question=quiz.question,
-                                      is_anonymous=False, options=options, type="quiz",
-                                      correct_option_id=correct_option_id)
-            quiz_s.post_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
-            quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
-        except Exception as e:
-            print(e)
     user_s.user_start_new_quiz(message.from_user.id)
+    quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=quizzes_number)
+    user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
                                                                telegram_id=message.from_user.id,
                                                                user_s=user_s)))
-    await message.answer(local.get_text(text="restart message", telegram_id=message.from_user.id,
-                                        user_s=user_s), reply_markup=poll_keyboard)
+    await message.answer(local.get_text(text="quiz number message", user_s=user_s, telegram_id=message.from_user.id)
+                         .format(quizzes_number), reply_markup=poll_keyboard)
+    await send_poll(telegram_id=message.from_user.id,
+                    quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_id_for_user(telegram_id=message.from_user.id)))
 
 
 @dp.message_handler(content_types=["poll"])
@@ -89,8 +90,6 @@ async def msg_with_poll(message: types.Message):
     if message.poll.type != "quiz":
         await message.reply("Извините, я принимаю только викторины (quiz)!")
         return
-    # Сохраняем себе викторину в память
-
     question = message.poll.question
     try:
         r = quiz_s.push_quiz_to_api(topic=question.split()[0], quiz_id=message.poll.id,
@@ -113,10 +112,22 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                                                                        option=quiz_answer.option_ids[0])
                                             , number=quizzes_number)
     if data[0]:
+        poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
+                                                                   telegram_id=quiz_answer.user.id,
+                                                                   user_s=user_s)))
         await bot.send_message(chat_id=quiz_answer.user.id,
                                text=local.get_text(text="result message",
                                                    telegram_id=quiz_answer.user.id,
                                                    user_s=user_s).format(data[1], quizzes_number))
+        await bot.send_message(chat_id=quiz_answer.user.id,
+                               text=local.get_text(text="restart message",
+                                                   telegram_id=quiz_answer.user.id,
+                                                   user_s=user_s), reply_markup=poll_keyboard)
+    else:
+        await send_poll(telegram_id=quiz_answer.user.id,
+                        quiz=quiz_s.get_quiz_from_id(
+                            quiz_id=user_s.get_quiz_id_for_user(telegram_id=quiz_answer.user.id)))
 
 
 if __name__ == "__main__":
