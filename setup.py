@@ -3,6 +3,7 @@
 # -*- coding: utf-8 -*-
 # dependencies
 import logging
+from time import sleep
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
@@ -31,6 +32,7 @@ async def send_poll(quiz, telegram_id):
     msg = await bot.send_poll(chat_id=telegram_id, question=quiz.question,
                               is_anonymous=False, options=options, type="quiz",
                               correct_option_id=correct_option_id)
+    sleep(0.15)
     quiz_s.post_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
 
@@ -48,7 +50,7 @@ async def cmd_start(message: types.Message):
     await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
 
 
-@dp.message_handler(lambda message: local.check_text("languages", message.text))
+@dp.message_handler(lambda message: local.check_text(["languages"], message.text))
 async def start_app(message: types.Message):
     user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -59,19 +61,21 @@ async def start_app(message: types.Message):
                          reply_markup=poll_keyboard)
 
 
-@dp.message_handler(lambda message: local.check_text("start button", message.text))
+@dp.message_handler(lambda message: local.check_text(["start button"], message.text))
 async def choose_topic(message: types.Message):
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for topic in topics:
-        poll_keyboard.add(types.KeyboardButton(text=topic))
+        poll_keyboard.add(types.KeyboardButton(text=local.get_text(text=topic, user_s=user_s,
+                                                                   telegram_id=message.from_user.id)))
     await message.answer(local.get_text(text="select message", telegram_id=message.from_user.id,
                                         user_s=user_s), reply_markup=poll_keyboard)
 
 
-@dp.message_handler(lambda message: message.text in topics)
+@dp.message_handler(lambda message: local.check_text(texts=local.subjects, message=message.text))
 async def start_test(message: types.Message):
+    key_text = local.get_key(text=message.text)
     user_s.user_start_new_quiz(message.from_user.id)
-    quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=message.text, number=quizzes_number)
+    quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=key_text, number=quizzes_number)
     user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",

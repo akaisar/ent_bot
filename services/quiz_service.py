@@ -22,7 +22,6 @@ class QuizService:
                 if quiz.quiz_id == quiz_id:
                     return quiz
 
-
     def load_quizzes_from_topic(self, topic_name):
         if topic_name in self.quizzes_from_topic:
             return self.quizzes_from_topic[topic_name]
