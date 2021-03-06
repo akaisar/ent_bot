@@ -35,7 +35,7 @@ async def send_poll(quiz, telegram_id):
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
 
 
-@dp.message_handler(commands=["start"])
+@dp.message_handler(commands=["start", "language"])
 async def cmd_start(message: types.Message):
     logging.info(message.from_user)
     user_s.post_user(telegram_id=message.from_user.id)
