@@ -63,6 +63,7 @@ class UserService:
         for student in self.students:
             if student.telegram_id == telegram_id:
                 return student.selected_language
+        return "Русский"
 
     def post_user(self, telegram_id):
         for student in self.students:

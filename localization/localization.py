@@ -47,7 +47,10 @@ class Localization:
                     return key
 
     def get_text(self, text, telegram_id, user_s):
-        return self.data[text][user_s.get_user_language(telegram_id=telegram_id)]
+        try:
+            return self.data[text][user_s.get_user_language(telegram_id=telegram_id)]
+        except Exception as e:
+            print(e)
 
     def check_text(self, texts, message):
         for text in texts:
