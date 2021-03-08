@@ -71,7 +71,7 @@ class UserService:
                 return
         self.students.append(Student(
             telegram_id=telegram_id,
-            selected_language="Русский язык",
+            selected_language="Русский",
             completed_quizzes=[]
         ))
         write_users_to_file("data_users.txt", self.students)

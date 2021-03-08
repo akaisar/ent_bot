@@ -23,7 +23,7 @@ quiz_s = quiz_service.QuizService()
 local = Localization()
 quizzes_number = 20
 
-topics = ["Қазақ тілі", "Қазақстан Тарихы"]
+topics = ["Қазақ тілі", "Қазақстан Тарихы", "История Казахстана"]
 
 
 async def send_poll(quiz, telegram_id):
@@ -87,24 +87,24 @@ async def start_test(message: types.Message):
                     quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_id_for_user(telegram_id=message.from_user.id)))
 
 
-@dp.message_handler(content_types=["poll"])
-async def msg_with_poll(message: types.Message):
-    if message.from_user.id not in Config.ADMIN_IDS:
-        return
-    if message.poll.type != "quiz":
-        await message.reply("Извините, я принимаю только викторины (quiz)!")
-        return
-    question = message.poll.question
-    try:
-        r = quiz_s.push_quiz_to_api(topic=question.split()[0], quiz_id=message.poll.id,
-                                    question=' '.join(question.split()[1:]),
-                                    options=[o.text for o in message.poll.options],
-                                    correct_option_id=message.poll.correct_option_id,
-                                    owner_id=message.from_user.id)
-        await message.answer(r)
-    except Exception as e:
-        print(e)
-        logging.info("can't reach api, question upload failed will continue with next poll creation")
+# @dp.message_handler(content_types=["poll"])
+# async def msg_with_poll(message: types.Message):
+#     if message.from_user.id not in Config.ADMIN_IDS:
+#         return
+#     if message.poll.type != "quiz":
+#         await message.reply("Извините, я принимаю только викторины (quiz)!")
+#         return
+#     question = message.poll.question
+#     try:
+#         r = quiz_s.push_quiz_to_api(topic=question.split()[0], quiz_id=message.poll.id,
+#                                     question=' '.join(question.split()[1:]),
+#                                     options=[o.text for o in message.poll.options],
+#                                     correct_option_id=message.poll.correct_option_id,
+#                                     owner_id=message.from_user.id)
+#         await message.answer(r)
+#     except Exception as e:
+#         print(e)
+#         logging.info("can't reach api, question upload failed will continue with next poll creation")
 
 
 @dp.poll_answer_handler()

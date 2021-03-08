@@ -3,6 +3,7 @@ import re
 import requests
 import json
 from config import Config
+
 questions = []
 options = []
 correct_options = {}
@@ -17,7 +18,6 @@ transform_option = {
     "Е": 4,
     "В": 1,
     "Д": 3,
-    "б": 1,
 }
 
 
@@ -34,24 +34,26 @@ def parser(file_name):
                 options.append(line)
             elif len(line.split()) != 0:
                 questions.append(line)
+    # print(len(options))
     for i in range(len(options)):
         if i % 5 != transform_option[options[i][0]]:
             print(i/5, options[i])
-    with codecs.open("output.txt", "rb", "utf-8") as f:
+    with codecs.open("history_rus_correct_options.txt", "rb") as f:
         data = f.readlines()
         global correct_options
+        # print(len(data))
         for i in range(len(data)):
-            correct_options[i] = transform_option[data[i][0]]
-
+            correct_options[i] = int(data[i])
 
 
 def get_quizzes(file_name, topic_name):
     # global quizzes
     parser(file_name)
     for i in range(len(questions)):
+        # print(questions[i])
         quiz = {
             "topic": topic_name,
-            "question": questions[i],
+            "question": re.sub(r"[0-9]+\. ", "", questions[i]),
             "options": "$".join([option[2:] for option in options[i * 5:(i + 1) * 5]]),
             "correct_option_id": correct_options[i],
             "owner": 0,
@@ -65,4 +67,4 @@ def get_quizzes(file_name, topic_name):
 
 
 if __name__ == "__main__":
-    get_quizzes("input2.txt", "Қазақстан Тарихы")
+    get_quizzes("3683_testent_history.txt", "История Казахстана")
