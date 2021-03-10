@@ -38,7 +38,7 @@ def parser(file_name):
     for i in range(len(options)):
         if i % 5 != transform_option[options[i][0]]:
             print(i/5, options[i])
-    with codecs.open("history_rus_correct_options.txt", "rb") as f:
+    with codecs.open("output.txt", "rb") as f:
         data = f.readlines()
         global correct_options
         # print(len(data))
@@ -67,4 +67,4 @@ def get_quizzes(file_name, topic_name):
 
 
 if __name__ == "__main__":
-    get_quizzes("3683_testent_history.txt", "История Казахстана")
+    get_quizzes("3785_test_geo.txt", "География рус")

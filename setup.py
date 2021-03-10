@@ -23,7 +23,7 @@ quiz_s = quiz_service.QuizService()
 local = Localization()
 quizzes_number = 20
 
-topics = ["Қазақ тілі", "Қазақстан Тарихы", "История Казахстана"]
+topics = ["Қазақ тілі", "Қазақстан Тарихы", "История Казахстана", "География рус"]
 
 
 async def send_poll(quiz, telegram_id):
@@ -83,7 +83,7 @@ async def start_test(message: types.Message):
                                                                user_s=user_s)))
     await message.answer(local.get_text(text="quiz number message", user_s=user_s, telegram_id=message.from_user.id)
                          .format(quizzes_number), reply_markup=poll_keyboard)
-    await send_poll(telegram_id=message.from_user.id,
+    await send_poll(telegram_id=message.chat.id,
                     quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_id_for_user(telegram_id=message.from_user.id)))
 
 

@@ -22,8 +22,11 @@ transform_option = {
     "В": 1,
     "Д": 3,
 }
+output = []
 
-with open("history_rus_correct_ans.txt") as f, open("history_rus_correct_options.txt", "w") as f2:
+
+with open("input.txt") as f, open("output.txt", "w") as f2:
     data = f.readlines()
-    for i in range(len(data)):
-        f2.write(str(transform_option[data[i][0]])+'\n')
+    for line in data:
+        output.append(str(transform_option[line[0]]) + "\n")
+    f2.writelines(output)
