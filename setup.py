@@ -23,8 +23,9 @@ quiz_s = quiz_service.QuizService()
 session_s = session_service.SessionService()
 local = Localization()
 quizzes_number = 20
+time_between_questions = 0.75
 
-topics = ["Қазақ тілі", "Қазақстан Тарихы", "История Казахстана", "География рус"]
+topics = ["Қазақ тілі", "География рус", "Қазақстан Тарихы", "История Казахстана"]
 
 
 async def send_poll(quiz, telegram_id):
@@ -33,7 +34,7 @@ async def send_poll(quiz, telegram_id):
     msg = await bot.send_poll(chat_id=telegram_id, question=quiz.question,
                               is_anonymous=False, options=options, type="quiz",
                               correct_option_id=correct_option_id)
-    sleep(1)
+    sleep(time_between_questions)
     quiz_s.post_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
 
@@ -46,8 +47,9 @@ async def cmd_start(message: types.Message):
     # if message.from_user.id in Config.ADMIN_IDS:
     #     poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
     #                                            request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
-    poll_keyboard.add(types.KeyboardButton(text="Қазақ"))
-    poll_keyboard.add(types.KeyboardButton(text="Русский"))
+    poll_keyboard.row(types.KeyboardButton(text="Қазақ"), types.KeyboardButton(text="Русский"))
+    # poll_keyboard.add(types.KeyboardButton(text="Қазақ"))
+    # poll_keyboard.add(types.KeyboardButton(text="Русский"))
     await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
 
 
@@ -67,9 +69,16 @@ async def start_app(message: types.Message):
 async def choose_topic(message: types.Message):
     user_s.post_user(telegram_id=message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for topic in topics:
-        poll_keyboard.add(types.KeyboardButton(text=local.get_text(text=topic, user_s=user_s,
-                                                                   telegram_id=message.from_user.id)))
+    for index in range(len(topics)):
+        if index % 2 == 0:
+            if index != len(topics):
+                poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
+                                                                           telegram_id=message.from_user.id)),
+                                  types.KeyboardButton(text=local.get_text(text=topics[index+1], user_s=user_s,
+                                                                           telegram_id=message.from_user.id))                                  )
+            else:
+                poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
+                                                                           telegram_id=message.from_user.id)))
     await message.answer(local.get_text(text="select message", telegram_id=message.from_user.id,
                                         user_s=user_s), reply_markup=poll_keyboard)
 
