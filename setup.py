@@ -7,7 +7,7 @@ from time import sleep
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from services import quiz_service, user_service
+from services import quiz_service, user_service, session_service
 from config import Config
 from localization.localization import Localization
 import random
@@ -20,6 +20,7 @@ dp = Dispatcher(bot)
 dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
+session_s = session_service.SessionService()
 local = Localization()
 quizzes_number = 20
 
@@ -52,6 +53,7 @@ async def cmd_start(message: types.Message):
 
 @dp.message_handler(lambda message: local.check_text(["languages"], message.text))
 async def start_app(message: types.Message):
+    user_s.post_user(telegram_id=message.from_user.id)
     user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
@@ -63,6 +65,7 @@ async def start_app(message: types.Message):
 
 @dp.message_handler(lambda message: local.check_text(["start button"], message.text))
 async def choose_topic(message: types.Message):
+    user_s.post_user(telegram_id=message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for topic in topics:
         poll_keyboard.add(types.KeyboardButton(text=local.get_text(text=topic, user_s=user_s,
@@ -73,10 +76,12 @@ async def choose_topic(message: types.Message):
 
 @dp.message_handler(lambda message: local.check_text(texts=local.subjects, message=message.text))
 async def start_test(message: types.Message):
+    user_s.post_user(telegram_id=message.from_user.id)
     key_text = local.get_key(text=message.text)
     user_s.user_start_new_quiz(message.from_user.id)
     quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=key_text, number=quizzes_number)
     user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=message.from_user.id)
+    session_s.create_session(telegram_id=message.from_user.id, quiz_ids=quiz_ids, topic_name=key_text)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
                                                                telegram_id=message.from_user.id,
@@ -84,7 +89,7 @@ async def start_test(message: types.Message):
     await message.answer(local.get_text(text="quiz number message", user_s=user_s, telegram_id=message.from_user.id)
                          .format(quizzes_number), reply_markup=poll_keyboard)
     await send_poll(telegram_id=message.chat.id,
-                    quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_id_for_user(telegram_id=message.from_user.id)))
+                    quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)))
 
 
 # @dp.message_handler(content_types=["poll"])
@@ -109,6 +114,7 @@ async def start_test(message: types.Message):
 
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
+    user_s.post_user(telegram_id=quiz_answer.user.id)
     quiz_id = quiz_s.get_old_id(quiz_answer.poll_id)
     user_s.complete_quiz(quiz_id=quiz_id, telegram_id=quiz_answer.user.id)
     data = user_s.user_make_answer_for_quiz(telegram_id=quiz_answer.user.id,
@@ -117,6 +123,8 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                             , number=quizzes_number)
     if data[0]:
         poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        session_s.post_session(telegram_id=quiz_answer.user.id, results=user_s.get_quiz_results(
+            telegram_id=quiz_answer.user.id))
         poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
                                                                    telegram_id=quiz_answer.user.id,
                                                                    user_s=user_s)))
@@ -131,8 +139,9 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
     else:
         await send_poll(telegram_id=quiz_answer.user.id,
                         quiz=quiz_s.get_quiz_from_id(
-                            quiz_id=user_s.get_quiz_id_for_user(telegram_id=quiz_answer.user.id)))
+                            quiz_id=user_s.get_quiz_ids_for_user(telegram_id=quiz_answer.user.id)))
 
 
 if __name__ == "__main__":
+    user_s.get_users()
     executor.start_polling(dp, skip_updates=True)

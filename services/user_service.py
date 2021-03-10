@@ -5,14 +5,30 @@ import json
 import logging
 
 
-def read_user_from_file(file_name):
-    with open(file_name, "rb") as f:
-        return f.read()
+def read_users_from_api():
+    r = requests.get(Config.API_URL+"userDb")
+    data = json.loads(r.text)
+    students = []
+    for line in data:
+        student = Student(telegram_id=line["telegram_id"], selected_language=line["selected_language"],
+                          completed_quizzes=line["quizzes"])
+        students.append(student)
+    return students
 
 
-def write_users_to_file(file_name, users):
-    with open(file_name, "w") as f:
-        f.write(json.dumps(users, cls=MyEncoder))
+def post_user_to_api(user):
+    json_user = {
+        "telegram_id": user.telegram_id,
+        "selected_language": user.selected_language,
+        "quizzes": user.completed_quizzes
+    }
+    r = requests.post(Config.API_URL+"userDb", json_user)
+    print(r)
+
+
+def put_args_to_api(args):
+    r = requests.put(Config.API_URL+"userDb", json=args)
+    print(r)
 
 
 class UserService:
@@ -21,7 +37,10 @@ class UserService:
     quizzes_for_user = {}
     quiz_ids_for_user = {}
 
-    def get_quiz_id_for_user(self, telegram_id):
+    def get_quiz_results(self, telegram_id):
+        return self.quizzes_for_user[telegram_id]
+
+    def get_quiz_ids_for_user(self, telegram_id):
         return self.quiz_ids_for_user[telegram_id][len(self.quizzes_for_user[telegram_id])]
 
     def set_quiz_ids_for_user(self, quiz_ids, telegram_id):
@@ -44,20 +63,13 @@ class UserService:
             return [False]
 
     def get_users(self):
-        data = read_user_from_file("data_users.txt")
-        for c in json.loads(data):
-            self.students.append(
-                Student(
-                    telegram_id=c["telegram_id"],
-                    completed_quizzes=c["completed_quizzes"],
-                    selected_language=c["selected_language"]
-                )
-            )
+        self.students = read_users_from_api()
 
     def set_user_language(self, telegram_id, selected_language):
         for student in self.students:
             if student.telegram_id == telegram_id:
                 student.selected_language = selected_language
+        put_args_to_api({"telegram_id": telegram_id, "selected_language": selected_language})
 
     def get_user_language(self, telegram_id):
         for student in self.students:
@@ -69,15 +81,17 @@ class UserService:
         for student in self.students:
             if student.telegram_id == telegram_id:
                 return
-        self.students.append(Student(
+        student = Student(
             telegram_id=telegram_id,
             selected_language="Русский",
             completed_quizzes=[]
-        ))
-        write_users_to_file("data_users.txt", self.students)
+        )
+        self.students.append(student)
+        post_user_to_api(student)
 
     def complete_quiz(self, telegram_id, quiz_id):
         for student in self.students:
             if student.telegram_id == telegram_id:
                 if quiz_id not in student.completed_quizzes:
                     student.completed_quizzes.append(quiz_id)
+                    put_args_to_api({"telegram_id": telegram_id, "quizzes": student.completed_quizzes})

@@ -2,6 +2,14 @@ from typing import List
 from json import JSONEncoder
 
 
+class Session:
+    def __init__(self, telegram_id, topic_name, quiz_ids, results):
+        self.telegram_id = telegram_id
+        self.topic_name = topic_name
+        self.quiz_ids = quiz_ids
+        self.results = results
+
+
 class User:
     def __init__(self, telegram_id, selected_language):
         self.telegram_id: int = telegram_id  # ID юзера телеграм
@@ -26,7 +34,7 @@ class Quiz:
 class Student(User):
     def __init__(self, completed_quizzes, telegram_id, selected_language):
         super().__init__(telegram_id=telegram_id, selected_language=selected_language)
-        self.completed_quizzes = completed_quizze
+        self.completed_quizzes = completed_quizzes
 
 
 class MyEncoder(JSONEncoder):
