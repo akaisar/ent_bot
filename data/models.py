@@ -26,7 +26,7 @@ class Quiz:
 class Student(User):
     def __init__(self, completed_quizzes, telegram_id, selected_language):
         super().__init__(telegram_id=telegram_id, selected_language=selected_language)
-        self.completed_quizzes = completed_quizzes
+        self.completed_quizzes = completed_quizze
 
 
 class MyEncoder(JSONEncoder):

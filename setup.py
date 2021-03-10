@@ -32,7 +32,7 @@ async def send_poll(quiz, telegram_id):
     msg = await bot.send_poll(chat_id=telegram_id, question=quiz.question,
                               is_anonymous=False, options=options, type="quiz",
                               correct_option_id=correct_option_id)
-    sleep(0.15)
+    sleep(1)
     quiz_s.post_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
 

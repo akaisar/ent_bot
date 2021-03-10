@@ -1,4 +1,7 @@
 import re
+import json
+import requests
+from config import Config
 # with open("3683_testent_history.rtf") as f:
 #     data = f.read()
 #     options = re.findall(r'\\b .+', data)
@@ -25,8 +28,14 @@ transform_option = {
 output = []
 
 
-with open("input.txt") as f, open("output.txt", "w") as f2:
-    data = f.readlines()
+def get_request_from_api(suffix):
+    return requests.get(Config.API_URL + suffix)
+
+topics = ["Қазақ тілі", "Қазақстан Тарихы", "История Казахстана", "География рус"]
+for topic in topics:
+    data = get_request_from_api(f"quizDb/{topic}/")
+    data = json.loads(data.text)
     for line in data:
-        output.append(str(transform_option[line[0]]) + "\n")
-    f2.writelines(output)
+        output.append(str(line))
+with open('local_db.txt', "w") as f:
+    f.writelines(output)
