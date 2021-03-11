@@ -42,7 +42,7 @@ async def send_poll(quiz, telegram_id):
 @dp.message_handler(commands=["start", "language"])
 async def cmd_start(message: types.Message):
     logging.info(message.from_user)
-    user_s.post_user(telegram_id=message.from_user.id)
+    await user_s.post_user(telegram_id=message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     # if message.from_user.id in Config.ADMIN_IDS:
     #     poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
@@ -53,8 +53,8 @@ async def cmd_start(message: types.Message):
 
 @dp.message_handler(lambda message: local.check_text(["languages"], message.text))
 async def start_app(message: types.Message):
-    user_s.post_user(telegram_id=message.from_user.id)
-    user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
+    await user_s.post_user(telegram_id=message.from_user.id)
+    await user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
                                                                telegram_id=message.from_user.id,
@@ -65,7 +65,7 @@ async def start_app(message: types.Message):
 
 @dp.message_handler(lambda message: local.check_text(["start button"], message.text))
 async def choose_topic(message: types.Message):
-    user_s.post_user(telegram_id=message.from_user.id)
+    await user_s.post_user(telegram_id=message.from_user.id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for index in range(len(topics)):
         if index % 2 == 0:
@@ -83,7 +83,7 @@ async def choose_topic(message: types.Message):
 
 @dp.message_handler(lambda message: local.check_text(texts=local.subjects, message=message.text))
 async def start_test(message: types.Message):
-    user_s.post_user(telegram_id=message.from_user.id)
+    await user_s.post_user(telegram_id=message.from_user.id)
     key_text = local.get_key(text=message.text)
     user_s.user_start_new_quiz(message.from_user.id)
     quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=key_text, number=quizzes_number)
@@ -121,9 +121,9 @@ async def start_test(message: types.Message):
 
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
-    user_s.post_user(telegram_id=quiz_answer.user.id)
+    await user_s.post_user(telegram_id=quiz_answer.user.id)
     quiz_id = quiz_s.get_old_id(quiz_answer.poll_id)
-    user_s.complete_quiz(quiz_id=quiz_id, telegram_id=quiz_answer.user.id)
+    await user_s.complete_quiz(quiz_id=quiz_id, telegram_id=quiz_answer.user.id)
     data = user_s.user_make_answer_for_quiz(telegram_id=quiz_answer.user.id,
                                             is_option_correct=quiz_s.is_option_correct(quiz_id=quiz_answer.poll_id,
                                                                                        option=quiz_answer.option_ids[0])

@@ -65,7 +65,7 @@ class UserService:
     def get_users(self):
         self.students = read_users_from_api()
 
-    def set_user_language(self, telegram_id, selected_language):
+    async def set_user_language(self, telegram_id, selected_language):
         for student in self.students:
             if student.telegram_id == telegram_id:
                 student.selected_language = selected_language
@@ -77,7 +77,7 @@ class UserService:
                 return student.selected_language
         return "Русский"
 
-    def post_user(self, telegram_id):
+    async def post_user(self, telegram_id):
         for student in self.students:
             if student.telegram_id == telegram_id:
                 return
@@ -89,7 +89,7 @@ class UserService:
         self.students.append(student)
         await post_user_to_api(student)
 
-    def complete_quiz(self, telegram_id, quiz_id):
+    async def complete_quiz(self, telegram_id, quiz_id):
         for student in self.students:
             if student.telegram_id == telegram_id:
                 if quiz_id not in student.completed_quizzes:
