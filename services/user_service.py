@@ -16,7 +16,7 @@ def read_users_from_api():
     return students
 
 
-def post_user_to_api(user):
+async def post_user_to_api(user):
     json_user = {
         "telegram_id": user.telegram_id,
         "selected_language": user.selected_language,
@@ -26,7 +26,7 @@ def post_user_to_api(user):
     print(r)
 
 
-def put_args_to_api(args):
+async def put_args_to_api(args):
     r = requests.put(Config.API_URL+"userDb", json=args)
     print(r)
 
@@ -69,7 +69,7 @@ class UserService:
         for student in self.students:
             if student.telegram_id == telegram_id:
                 student.selected_language = selected_language
-        put_args_to_api({"telegram_id": telegram_id, "selected_language": selected_language})
+        await put_args_to_api({"telegram_id": telegram_id, "selected_language": selected_language})
 
     def get_user_language(self, telegram_id):
         for student in self.students:
@@ -87,11 +87,11 @@ class UserService:
             completed_quizzes=[]
         )
         self.students.append(student)
-        post_user_to_api(student)
+        await post_user_to_api(student)
 
     def complete_quiz(self, telegram_id, quiz_id):
         for student in self.students:
             if student.telegram_id == telegram_id:
                 if quiz_id not in student.completed_quizzes:
                     student.completed_quizzes.append(quiz_id)
-                    put_args_to_api({"telegram_id": telegram_id, "quizzes": student.completed_quizzes})
+                    await put_args_to_api({"telegram_id": telegram_id, "quizzes": student.completed_quizzes})
