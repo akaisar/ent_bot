@@ -4,7 +4,15 @@ import requests
 
 
 def post_response(session):
-    requests.post(Config.API_URL+"", json=session.__dict__)
+    json_session = {
+        "topic_name": session.topic_name,
+        "owner_id": session.telegram_id,
+        "quizzes": session.quiz_ids,
+        "results": str(session.results)
+    }
+    r = requests.post(Config.API_URL+"sessions", json=json_session)
+    print(json_session)
+    print("session request ", r)
 
 
 class SessionService:

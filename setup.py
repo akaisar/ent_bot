@@ -48,8 +48,6 @@ async def cmd_start(message: types.Message):
     #     poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
     #                                            request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
     poll_keyboard.row(types.KeyboardButton(text="Қазақ"), types.KeyboardButton(text="Русский"))
-    # poll_keyboard.add(types.KeyboardButton(text="Қазақ"))
-    # poll_keyboard.add(types.KeyboardButton(text="Русский"))
     await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
 
 
