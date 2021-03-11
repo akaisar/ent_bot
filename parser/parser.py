@@ -34,7 +34,6 @@ def parser(file_name):
                 options.append(line)
             elif len(line.split()) != 0:
                 questions.append(line)
-    # print(len(options))
     for i in range(len(options)):
         if i % 5 != transform_option[options[i][0]]:
             print(i/5, options[i])
@@ -49,8 +48,8 @@ def parser(file_name):
 def get_quizzes(file_name, topic_name):
     # global quizzes
     parser(file_name)
+    print(len(questions))
     for i in range(len(questions)):
-        # print(questions[i])
         quiz = {
             "topic": topic_name,
             "question": re.sub(r"[0-9]+\. ", "", questions[i]),
@@ -67,4 +66,4 @@ def get_quizzes(file_name, topic_name):
 
 
 if __name__ == "__main__":
-    get_quizzes("3785_test_geo.txt", "География рус")
+    get_quizzes("3295_tests_bio_2013.txt", "Биология рус")

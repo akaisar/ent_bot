@@ -25,7 +25,7 @@ local = Localization()
 quizzes_number = 20
 time_between_questions = 0.75
 
-topics = ["Қазақ тілі", "География рус", "Қазақстан Тарихы", "История Казахстана"]
+topics = ["Қазақ тілі", "География рус", "Қазақстан Тарихы", "История Казахстана", "Биология рус"]
 
 
 async def send_poll(quiz, telegram_id):
@@ -69,11 +69,11 @@ async def choose_topic(message: types.Message):
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for index in range(len(topics)):
         if index % 2 == 0:
-            if index != len(topics):
+            if index != len(topics)-1:
                 poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
                                                                            telegram_id=message.from_user.id)),
                                   types.KeyboardButton(text=local.get_text(text=topics[index+1], user_s=user_s,
-                                                                           telegram_id=message.from_user.id))                                  )
+                                                                           telegram_id=message.from_user.id)))
             else:
                 poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
                                                                            telegram_id=message.from_user.id)))

@@ -8,7 +8,8 @@ def post_response(session):
         "topic_name": session.topic_name,
         "owner_id": session.telegram_id,
         "quizzes": session.quiz_ids,
-        "results": str(session.results)
+        "results": ",".join([str(session.quiz_ids[i])+": "+str(session.results[i])
+                             for i in range(len(session.results))])
     }
     r = requests.post(Config.API_URL+"sessions", json=json_session)
     print(json_session)
