@@ -42,6 +42,7 @@ class Data(Enum):
     TEACHER_PAYMENT_MESSAGE = 38
     TEACHER_REFERRAL_BUTTON = 39
     TEACHER_REFERRAL_MESSAGE = 40
+    STUDENT_STATS_MESSAGE = 41
 
 
 class Localization:
@@ -53,6 +54,14 @@ class Localization:
     subjects = [Data.KAZ_HISTORY_KAZ, Data.KAZ_HISTORY_RUS, Data.KAZAKH_LANGUAGE, Data.RUSSIAN_LANGUAGE,
                 Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_RUS, Data.BIOLOGY_KAZ]
     data = {
+        Data.STUDENT_STATS_MESSAGE: {
+            "Русский": "Telegram id: {}\nКоличество правильных ответов за все время: {}\n"
+                       "Общее количество ответов за все время: {}\nКоличество правильных ответов за 7 дней: {}\n"
+                       "Общее количество ответов за 7 дней: {}\nДата создания: {}",
+            "Қазақ": "Telegram id: {}\nДурыс жауап саны: {}\n"
+                     "Жауап жалпы саны : {}\n7 күнгі дурыс жауап саны: {}\n"
+                     "7 күнгі жалпы жауап саны: {}\nТіркелу күні: {}",
+        },
         Data.TEACHER_REFERRAL_MESSAGE: {
             "Русский": "Ваша реферальная ссылка {}",
             "Қазақ": "Сіздің реферал сілтеменіз {}"

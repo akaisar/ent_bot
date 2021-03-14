@@ -17,6 +17,9 @@ class Config:
         Data.STUDENT: "Student",
         Data.TUTOR: "Tutor"
     }
+
+    SUBJECT_NAMES = ["Биология рус", "География рус", "Қазақ тілі", "Қазақстан Тарихы", "История Казахстана",
+                     "Русский"]
     DATA_SUBJECT_NAME = {
         Data.KAZAKH_LANGUAGE: "Қазақ тілі",
         Data.RUSSIAN_LANGUAGE: "Қазақ тілі",

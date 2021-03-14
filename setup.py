@@ -248,6 +248,24 @@ async def student_payment(message: types.Message):
     await send_message_and_buttons(message=message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.STUDENT_PAYMENT_MESSAGE)
 
 
+# MARK: Student stats
+
+@dp.message_handler(lambda message: local.check_text([Data.STUDENT_STATS_BUTTON], message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def student_stats(message: types.Message):
+    telegram_id = message.from_user.id
+    language = user_s.get_language(telegram_id)
+    stats = await user_s.get_student_stats(telegram_id)
+    print(stats)
+    args = [telegram_id,stats["correct_all_time"]+stats["incorrect_all_time"], stats["correct_all_time"],
+            stats["Last_7_days_question_number:"], stats["Last_7_days_correct_question_number:"],
+            stats["Profile_creation_date"]]
+    print(stats)
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    poll_keyboard.add(local.data[Data.MAIN_MENU_BUTTON][language])
+    await message.answer(local.data[Data.STUDENT_STATS_MESSAGE][language].format(*args), reply_markup=poll_keyboard)
+
+
 # MARK: Answer handler
 
 @dp.poll_answer_handler()
@@ -291,8 +309,13 @@ async def teacher_payment(message: types.Message):
 async def teacher_stats(message: types.Message):
     telegram_id = message.from_user.id
     students = await user_s.get_teacher_students(telegram_id)
-    for student in students:
-        await message.answer("Telegram id: "+str(student))
+    language = user_s.get_language(telegram_id)
+    for student_id in students:
+        stats = await user_s.get_student_stats(student_id)
+        args = [student_id, stats["correct_all_time"] + stats["incorrect_all_time"], stats["correct_all_time"],
+                stats["Last_7_days_question_number:"], stats["Last_7_days_correct_question_number:"],
+                stats["Profile_creation_date"]]
+        await message.answer(local.data[Data.STUDENT_STATS_MESSAGE][language].format(*args))
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.MAIN_MENU_MESSAGE)
 
 
@@ -305,6 +328,7 @@ async def teacher_referrals(message: types.Message):
     referral = await user_s.get_teacher_referral(telegram_id)
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.TEACHER_REFERRAL_MESSAGE,
                                    args=[referral])
+
 
 # MARK: Default response
 

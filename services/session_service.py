@@ -10,7 +10,7 @@ def post_session(session):
         return
     json_session = {
         "topic_name": session.topic_name,
-        "owner_id": session.telegram_id,
+        "owner_id": [session.telegram_id],
         "quizzes": session.quiz_ids[:len(session.results)],
         "results": session.results
     }

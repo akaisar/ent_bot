@@ -145,3 +145,10 @@ class UserService:
 
     async def get_teacher_referral(self, telegram_id):
         return self.users[Config.TEACHERS][telegram_id].referral
+
+    @staticmethod
+    async def get_student_stats(telegram_id):
+        r = requests.get(Config.API_URL+Config.STUDENTS+"/"+str(telegram_id)+"/stats")
+        logging.info("Get user stats: "+str(r))
+        json_obj = json.loads(r.text)
+        return json_obj
