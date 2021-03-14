@@ -211,7 +211,7 @@ async def cancel_input_referral(message: types.Message):
     state = dp.current_state(user=telegram_id)
     await state.finish()
     await send_message_and_buttons(message=message, buttons=local.student_main_menu_buttons,
-                                   state=Data.STUDENT_MAIN_MENU_MESSAGE)
+                                   state=Data.IN_MAIN_MENU_MESSAGE)
 
 
 # MARK: Input referral
@@ -292,7 +292,7 @@ async def teacher_stats(message: types.Message):
     telegram_id = message.from_user.id
     students = await user_s.get_teacher_students(telegram_id)
     for student in students:
-        await message.answer("Telegram id: "+student)
+        await message.answer("Telegram id: "+str(student))
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.MAIN_MENU_MESSAGE)
 
 # MARK: Default response
