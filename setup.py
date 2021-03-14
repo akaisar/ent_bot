@@ -295,6 +295,17 @@ async def teacher_stats(message: types.Message):
         await message.answer("Telegram id: "+str(student))
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.MAIN_MENU_MESSAGE)
 
+
+# MARK: Teacher referrals
+
+@dp.message_handler(lambda message: local.check_text([Data.TEACHER_REFERRAL_BUTTON], message.text)[0] and
+                                    user_s.is_teacher(telegram_id=message.from_user.id))
+async def teacher_referrals(message: types.Message):
+    telegram_id = message.from_user.id
+    referral = await user_s.get_teacher_referral(telegram_id)
+    await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.TEACHER_REFERRAL_MESSAGE,
+                                   args=[referral])
+
 # MARK: Default response
 
 @dp.message_handler()

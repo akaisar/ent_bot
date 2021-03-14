@@ -142,3 +142,6 @@ class UserService:
 
     async def get_teacher_students(self, telegram_id):
         return self.users[Config.TEACHERS][telegram_id].students
+
+    async def get_teacher_referral(self, telegram_id):
+        return self.users[Config.TEACHERS][telegram_id].referral

@@ -40,17 +40,27 @@ class Data(Enum):
     STUDENT_PAYMENT_MESSAGE = 35
     TEACHER_STATS_BUTTON = 37
     TEACHER_PAYMENT_MESSAGE = 38
+    TEACHER_REFERRAL_BUTTON = 39
+    TEACHER_REFERRAL_MESSAGE = 40
 
 
 class Localization:
     languages = ["Қазақ", "Русский"]
     student_main_menu_buttons = [Data.START_QUIZ_BUTTON, Data.ADD_TEACHER_BUTTON, Data.STUDENT_STATS_BUTTON,
                                  Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON]
-    teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON]
+    teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON, Data.TEACHER_REFERRAL_BUTTON]
     user_state_buttons = [Data.TEACHER, Data.STUDENT, Data.TUTOR]
     subjects = [Data.KAZ_HISTORY_KAZ, Data.KAZ_HISTORY_RUS, Data.KAZAKH_LANGUAGE, Data.RUSSIAN_LANGUAGE,
                 Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_RUS, Data.BIOLOGY_KAZ]
     data = {
+        Data.TEACHER_REFERRAL_MESSAGE: {
+            "Русский": "Ваша реферальная ссылка {}",
+            "Қазақ": "Сіздің реферал сілтеменіз {}"
+        },
+        Data.TEACHER_REFERRAL_BUTTON: {
+            "Русский": "Реферальная ссылка",
+            "Қазақ": "Реферал сілтеме"
+        },
         Data.TEACHER_PAYMENT_MESSAGE: {
             "Русский": "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
             "Қазақ": "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
