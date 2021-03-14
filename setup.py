@@ -284,6 +284,17 @@ async def teacher_payment(message: types.Message):
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.TEACHER_PAYMENT_MESSAGE)
 
 
+# MARK: Teacher stats
+
+@dp.message_handler(lambda message: local.check_text([Data.TEACHER_STATS_BUTTON], message.text)[0] and
+                                    user_s.is_teacher(telegram_id=message.from_user.id))
+async def teacher_stats(message: types.Message):
+    telegram_id = message.from_user.id
+    students = await user_s.get_teacher_students(telegram_id)
+    for student in students:
+        await message.answer("Telegram id: "+student)
+    await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.MAIN_MENU_MESSAGE)
+
 # MARK: Default response
 
 @dp.message_handler()

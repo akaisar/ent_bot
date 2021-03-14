@@ -137,3 +137,8 @@ class UserService:
             if teacher.referral == referral:
                 return [True, teacher]
         return [False]
+
+    # MARK: get teacher students
+
+    async def get_teacher_students(self, telegram_id):
+        return self.users[Config.TEACHERS][telegram_id].students
