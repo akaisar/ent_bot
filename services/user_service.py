@@ -6,7 +6,6 @@ import logging
 
 
 def json_to_obj(json_obj, user_type):
-    print(json_obj)
     if user_type == Config.STUDENTS:
         return Student(telegram_id=json_obj["telegram_id"])
     elif user_type == Config.USERS:
@@ -39,15 +38,12 @@ def get_users_from_api():
 
 
 async def post_user_to_api(user, user_type):
-    print(user.to_json())
     r = requests.post(Config.API_URL + user_type, json=user.to_json())
     return json.loads(r.text)
 
 
 async def put_args_to_api(user, user_type):
-    print(user.to_json())
     r = requests.put(Config.API_URL + user_type, json=user.to_json())
-    print(r.text)
 
 
 class UserService:
@@ -125,3 +121,19 @@ class UserService:
 
     def is_tutor(self, telegram_id):
         return self.get_user_state(telegram_id=telegram_id) == "Tutor"
+
+    # MARK: set student to teacher
+
+    async def set_student_to_teacher(self, telegram_id, referral):
+        data = self.find_teacher_by_referral(referral=referral)
+        if data[0]:
+            teacher = data[1]
+            teacher.students.append(telegram_id)
+            await put_args_to_api(teacher, Config.TEACHERS)
+        return data[0]
+
+    def find_teacher_by_referral(self, referral):
+        for telegram_id, teacher in self.users[Config.TEACHERS].items():
+            if teacher.referral == referral:
+                return [True, teacher]
+        return [False]

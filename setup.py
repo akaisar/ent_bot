@@ -7,16 +7,17 @@ from time import sleep
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from services import quiz_service, user_service, session_service
 from config import Config
 from localization.localization import Localization, Data
-from utils import calc_results
+from utils import calc_results, ReferralStates
 
 logging.basicConfig(level=logging.INFO)
 
 # bot initialization
 bot = Bot(token=Config.TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
@@ -161,7 +162,7 @@ async def set_user_state_result(message: types.Message):
                                     user_s.is_student(telegram_id=message.from_user.id))
 async def student_main_menu(message: types.Message):
     await send_message_and_buttons(message=message, buttons=local.student_main_menu_buttons,
-                                   state=Data.STUDENT_MAIN_MENU_MESSAGE)
+                                   state=Data.IN_MAIN_MENU_MESSAGE)
 
 
 # MARK: Choose quiz topic state
@@ -184,7 +185,7 @@ async def start_new_session(message: types.Message):
     quiz_ids = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=topic_name, number=quizzes_number)
     user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=telegram_id)
     session_s.create_session(telegram_id=telegram_id, quiz_ids=quiz_ids, topic_name=topic_name)
-    await send_message_and_buttons(message=message, buttons=[Data.CANCEL_SESSION_BUTTON],
+    await send_message_and_buttons(message=message, buttons=[Data.CANCEL_BUTTON],
                                    state=Data.START_SESSION_MESSAGE, args=[message.text, quizzes_number])
     await send_quiz(telegram_id=telegram_id, quiz=quiz_s.get_quiz_from_id(
         quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)))
@@ -192,7 +193,7 @@ async def start_new_session(message: types.Message):
 
 # MARK: Cancel session
 
-@dp.message_handler(lambda message: local.check_text([Data.CANCEL_SESSION_BUTTON], message.text)[0] and
+@dp.message_handler(lambda message: local.check_text([Data.CANCEL_BUTTON], message.text)[0] and
                                     user_s.is_student(telegram_id=message.from_user.id))
 async def cancel_session(message: types.Message):
     telegram_id = message.from_user.id
@@ -200,6 +201,51 @@ async def cancel_session(message: types.Message):
     session_s.post_session(telegram_id=telegram_id, results=results)
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.RESULTS_MESSAGE,
                                    args=calc_results(results=results))
+
+
+# MARK: Cancel input referral
+@dp.message_handler(lambda message: local.check_text([Data.CANCEL_BUTTON], text=message.text)[0],
+                    state=ReferralStates.REFERRAL_STATE_0)
+async def cancel_input_referral(message: types.Message):
+    telegram_id = message.from_user.id
+    state = dp.current_state(user=telegram_id)
+    await state.finish()
+    await send_message_and_buttons(message=message, buttons=local.student_main_menu_buttons,
+                                   state=Data.STUDENT_MAIN_MENU_MESSAGE)
+
+
+# MARK: Input referral
+
+@dp.message_handler(state=ReferralStates.REFERRAL_STATE_0)
+async def input_referral(message: types.Message):
+    telegram_id = message.from_user.id
+    result = await user_s.set_student_to_teacher(telegram_id=telegram_id, referral=message.text)
+    if result:
+        state = dp.current_state(user=telegram_id)
+        await state.finish()
+        await send_message_and_buttons(message=message, buttons=local.student_main_menu_buttons,
+                                       state=Data.TEACHER_ADD_SUCCESS_MESSAGE)
+    else:
+        await send_message_and_buttons(message, buttons=[Data.CANCEL_BUTTON], state=Data.TEACHER_ADD_UNSUCCESS_MESSAGE)
+
+
+# MARK: Add student to teacher
+
+@dp.message_handler(lambda message: local.check_text([Data.ADD_TEACHER_BUTTON], message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def add_student_to_teacher_root(message: types.Message):
+    telegram_id = message.from_user.id
+    state = dp.current_state(user=telegram_id)
+    await state.set_state(ReferralStates.REFERRAL_STATE_0)
+    await send_message_and_buttons(message=message, buttons=[Data.CANCEL_BUTTON], state=Data.INPUT_REFERRAL_MESSAGE)
+
+
+# MARK: Payment
+
+@dp.message_handler(lambda message: local.check_text([Data.PAYMENT_BUTTON], message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def student_payment(message: types.Message):
+    await send_message_and_buttons(message=message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.STUDENT_PAYMENT_MESSAGE)
 
 
 # MARK: Answer handler
@@ -223,88 +269,22 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                         quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=telegram_id)))
 
 
-#
-# @dp.message_handler(commands=["start", "language"])
-# async def cmd_start(message: types.Message):
-#     logging.info(message.from_user)
-#     await user_s.post_user(telegram_id=message.from_user.id)
-#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     # if message.from_user.id in Config.ADMIN_IDS:
-#     #     poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
-#     #                                            request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
-#     poll_keyboard.row(types.KeyboardButton(text="Қазақ"), types.KeyboardButton(text="Русский"))
-#     await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
-#
-#
-# @dp.message_handler(lambda message: local.check_text(["languages"], message.text))
-# async def start_app(message: types.Message):
-#     await user_s.post_user(telegram_id=message.from_user.id)
-#     await user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
-#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
-#                                                                telegram_id=message.from_user.id,
-#                                                                user_s=user_s)))
-#     await message.answer(local.get_text(text="start message", telegram_id=message.from_user.id, user_s=user_s),
-#                          reply_markup=poll_keyboard)
-#
-#
-# @dp.message_handler(lambda message: local.check_text(["start button"], message.text))
-# async def choose_topic(message: types.Message):
-#     await user_s.post_user(telegram_id=message.from_user.id)
-#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     for index in range(len(topics)):
-#         if index % 2 == 0:
-#             if index != len(topics)-1:
-#                 poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
-#                                                                            telegram_id=message.from_user.id)),
-#                                   types.KeyboardButton(text=local.get_text(text=topics[index+1], user_s=user_s,
-#                                                                            telegram_id=message.from_user.id)))
-#             else:
-#                 poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
-#                                                                            telegram_id=message.from_user.id)))
-#     await message.answer(local.get_text(text="select message", telegram_id=message.from_user.id,
-#                                         user_s=user_s), reply_markup=poll_keyboard)
-#
-#
-# @dp.message_handler(lambda message: local.check_text(texts=local.subjects, message=message.text))
-# async def start_test(message: types.Message):
-#     await user_s.post_user(telegram_id=message.from_user.id)
-#     key_text = local.get_key(text=message.text)
-#     user_s.user_start_new_quiz(message.from_user.id)
-#     quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=key_text, number=quizzes_number)
-#     user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=message.from_user.id)
-#     session_s.create_session(telegram_id=message.from_user.id, quiz_ids=quiz_ids, topic_name=key_text)
-#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
-#                                                                telegram_id=message.from_user.id,
-#                                                                user_s=user_s)))
-#     await message.answer(local.get_text(text="quiz number message", user_s=user_s, telegram_id=message.from_user.id)
-#                          .format(quizzes_number), reply_markup=poll_keyboard)
-#     await send_poll(telegram_id=message.chat.id,
-#                     quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)))
-#
-#
-# # @dp.message_handler(content_types=["poll"])
-# # async def msg_with_poll(message: types.Message):
-# #     if message.from_user.id not in Config.ADMIN_IDS:
-# #         return
-# #     if message.poll.type != "quiz":
-# #         await message.reply("Извините, я принимаю только викторины (quiz)!")
-# #         return
-# #     question = message.poll.question
-# #     try:
-# #         r = quiz_s.push_quiz_to_api(topic=question.split()[0], quiz_id=message.poll.id,
-# #                                     question=' '.join(question.split()[1:]),
-# #                                     options=[o.text for o in message.poll.options],
-# #                                     correct_option_id=message.poll.correct_option_id,
-# #                                     owner_id=message.from_user.id)
-# #         await message.answer(r)
-# #     except Exception as e:
-# #         print(e)
-# #         logging.info("can't reach api, question upload failed will continue with next poll creation")
-#
-#
+# MARK: Teacher Menu
+@dp.message_handler(lambda message: local.check_text([Data.MAIN_MENU_BUTTON], message.text)[0] and
+                                    user_s.is_teacher(telegram_id=message.from_user.id))
+async def teacher_main_menu(message: types.Message):
+    await send_message_and_buttons(message, buttons=local.teacher_main_menu_buttons, state=Data.IN_MAIN_MENU_MESSAGE)
 
+
+# MARK: Teacher Payment
+
+@dp.message_handler(lambda message: local.check_text([Data.PAYMENT_BUTTON], message.text)[0] and
+                                    user_s.is_teacher(telegram_id=message.from_user.id))
+async def teacher_payment(message: types.Message):
+    await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.TEACHER_PAYMENT_MESSAGE)
+
+
+# MARK: Default response
 
 @dp.message_handler()
 async def default_response(message: types.Message):

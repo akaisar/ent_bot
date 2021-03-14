@@ -20,8 +20,8 @@ class Data(Enum):
     ADD_TEACHER_BUTTON = 15
     STUDENT_STATS_BUTTON = 16
     SYNOPSES_BUTTON = 17  # Конспекты
-    STUDENT_PAYMENT_BUTTON = 18
-    STUDENT_MAIN_MENU_MESSAGE = 19
+    PAYMENT_BUTTON = 18
+    IN_MAIN_MENU_MESSAGE = 19
     RUSSIAN_LANGUAGE = 20
     KAZAKH_LANGUAGE = 21
     KAZ_HISTORY_KAZ = 22
@@ -31,24 +31,55 @@ class Data(Enum):
     BIOLOGY_RUS = 26
     BIOLOGY_KAZ = 27
     CHOOSE_QUIZ_TOPIC_MESSAGE = 28
-    CANCEL_SESSION_BUTTON = 29
+    CANCEL_BUTTON = 29
     START_SESSION_MESSAGE = 30
     RESULTS_MESSAGE = 31
+    INPUT_REFERRAL_MESSAGE = 32
+    TEACHER_ADD_SUCCESS_MESSAGE = 33
+    TEACHER_ADD_UNSUCCESS_MESSAGE = 34
+    STUDENT_PAYMENT_MESSAGE = 35
+    TEACHER_STATS_BUTTON = 37
+    TEACHER_PAYMENT_MESSAGE = 38
 
 
 class Localization:
     languages = ["Қазақ", "Русский"]
     student_main_menu_buttons = [Data.START_QUIZ_BUTTON, Data.ADD_TEACHER_BUTTON, Data.STUDENT_STATS_BUTTON,
-                                 Data.SYNOPSES_BUTTON, Data.STUDENT_PAYMENT_BUTTON]
+                                 Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON]
+    teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON]
     user_state_buttons = [Data.TEACHER, Data.STUDENT, Data.TUTOR]
     subjects = [Data.KAZ_HISTORY_KAZ, Data.KAZ_HISTORY_RUS, Data.KAZAKH_LANGUAGE, Data.RUSSIAN_LANGUAGE,
                 Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_RUS, Data.BIOLOGY_KAZ]
     data = {
+        Data.TEACHER_PAYMENT_MESSAGE: {
+            "Русский": "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
+            "Қазақ": "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
+        },
+        Data.TEACHER_STATS_BUTTON: {
+            "Русский": "Статистика учеников",
+            "Қазақ": "Оқушылар статистикасы"
+        },
+        Data.STUDENT_PAYMENT_MESSAGE: {
+            "Русский": "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
+            "Қазақ": "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
+        },
+        Data.TEACHER_ADD_UNSUCCESS_MESSAGE: {
+            "Русский": "Учителя с таким кодом не существует\nПопробуйте заново",
+            "Қазақ": "Мұндай кодпен ұстаз жоқ\nҚайтадан көрініз"
+        },
+        Data.TEACHER_ADD_SUCCESS_MESSAGE: {
+            "Русский": "Вы были успешно добавлены к учителю\nЧтобы вернуться в меню нажмите кнопку",
+            "Қазақ": "Сіз ұстаға сәтті тіркелдініз\nҚайту үшін батырманы басыныз"
+        },
+        Data.INPUT_REFERRAL_MESSAGE: {
+            "Русский": "Введите код",
+            "Қазақ": "Кодты енгізініз"
+        },
         Data.RESULTS_MESSAGE: {
             "Русский": "Ваш результат: {} : {}",
-            "Қазақ": "Cіздін нәтиженіз: {} : {}"
+            "Қазақ": "Cіздің нәтиженіз: {} : {}"
         },
-        Data.CANCEL_SESSION_BUTTON: {
+        Data.CANCEL_BUTTON: {
             "Русский": "Отмена",
             "Қазақ": "Бас тарту"
         },
@@ -92,11 +123,11 @@ class Localization:
             "Русский": "Казахский язык",
             "Қазақ": "Қазақ тілі"
         },
-        Data.STUDENT_MAIN_MENU_MESSAGE: {
+        Data.IN_MAIN_MENU_MESSAGE: {
             "Русский": "Выберите сервис",
             "Қазақ": "Сервис танданыз"
         },
-        Data.STUDENT_PAYMENT_BUTTON: {
+        Data.PAYMENT_BUTTON: {
             "Русский": "Платежи",
             "Қазақ": "Толемдер"
         },
@@ -121,7 +152,7 @@ class Localization:
             "Қазақ": "Режимінізді таңданыз"
         },
         Data.TUTOR: {
-            "Русский": "Репитито",
+            "Русский": "Репититор",
             "Қазақ": "Репититор"
         },
         Data.STUDENT: {
@@ -144,7 +175,7 @@ class Localization:
         },
         Data.WELCOME_MESSAGE: {
             "Русский": "Здравствуйте, пройдите в главное меню",
-            "Қазақ": "Саламатсызба, басты менюге ютініз"
+            "Қазақ": "Саламатсызба, басты менюге өтініз"
         },
         Data.SET_LANGUAGE_BUTTON: {
             "Русский": "Русский",
@@ -156,7 +187,7 @@ class Localization:
         },
         Data.MAIN_MENU_MESSAGE: {
             "Русский": "Чтобы пройти в главное меню нажмите кнопку",
-            "Қазақ": "Басты менюге юту үшін батырманы басыныз"
+            "Қазақ": "Басты менюге өту үшін батырманы басыныз"
         },
         Data.NOT_REGISTERED_MESSAGE: {
             "Русский": "Чтобы запустить бота используйте команду /start",
