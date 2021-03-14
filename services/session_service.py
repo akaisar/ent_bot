@@ -2,16 +2,19 @@ from data.models import Session
 from config import Config
 import requests
 
+# MARK: Post session to API
 
-def post_response(session):
+
+def post_session(session):
+    if len(session.results) == 0:
+        return
     json_session = {
         "topic_name": session.topic_name,
         "owner_id": session.telegram_id,
-        "quizzes": session.quiz_ids,
-        "results": ",".join([str(session.quiz_ids[i])+": "+str(session.results[i])
-                             for i in range(len(session.results))])
+        "quizzes": session.quiz_ids[:len(session.results)],
+        "results": session.results
     }
-    r = requests.post(Config.API_URL+"sessions", json=json_session)
+    r = requests.post(Config.API_URL+Config.SESSION_DB, json=json_session)
     print(json_session)
     print("session request ", r)
 
@@ -25,4 +28,4 @@ class SessionService:
 
     def post_session(self, telegram_id, results):
         self.sessions[telegram_id].results = results
-        post_response(session=self.sessions[telegram_id])
+        post_session(session=self.sessions[telegram_id])

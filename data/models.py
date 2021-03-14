@@ -10,12 +10,6 @@ class Session:
         self.results = results
 
 
-class User:
-    def __init__(self, telegram_id, selected_language):
-        self.telegram_id: int = telegram_id  # ID юзера телеграм
-        self.selected_language: str = selected_language  # Выбранный язык
-
-
 class Quiz:
     type: str = "question"
 
@@ -27,14 +21,64 @@ class Quiz:
         self.options: List[str] = [*options]  # "Распакованное" содержимое массива m_options в массив options
         self.correct_option_id: int = correct_option_id  # ID правильного ответа
         self.owner: int = 0  # Владелец опроса
-        self.chat_id: int = 0  # Чат, в котором опубликована викторина
         self.message_id: int = 0  # Сообщение с викториной (для закрытия)
 
+    def to_json(self):
+        return {
+            "topic": self.topic,
 
-class Student(User):
-    def __init__(self, completed_quizzes, telegram_id, selected_language):
-        super().__init__(telegram_id=telegram_id, selected_language=selected_language)
-        self.completed_quizzes = completed_quizzes
+        }
+
+
+class AbstractUser:
+    def __init__(self, telegram_id):
+        self.telegram_id: int = telegram_id  # ID юзера телеграм
+
+
+class User(AbstractUser):
+
+    def __init__(self, telegram_id, user_state="Student", selected_language="Русский"):
+        super().__init__(telegram_id)
+        self.selected_language = selected_language
+        self.user_state = user_state
+
+    def to_json(self):
+        return {
+            "telegram_id": self.telegram_id,
+            "selected_language": self.selected_language,
+            "user_state": self.user_state
+        }
+
+
+class Student(AbstractUser):
+    def to_json(self):
+        return {
+            "telegram_id": self.telegram_id,
+        }
+
+
+class Teacher(AbstractUser):
+    def __init__(self, telegram_id, students=None, referral=None):
+        super().__init__(telegram_id)
+        if students is None:
+            students = []
+        if referral is None:
+            referral = ""
+        self.students = students
+        self.referral = referral
+
+    def to_json(self):
+        return {
+            "telegram_id": self.telegram_id,
+            "students": self.students,
+        }
+
+
+class Tutor(AbstractUser):
+    def to_json(self):
+        return {
+            "telegram_id": self.telegram_id,
+        }
 
 
 class MyEncoder(JSONEncoder):

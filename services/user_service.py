@@ -1,97 +1,127 @@
 from config import Config
-from data.models import Student, MyEncoder
+from data.models import Student, MyEncoder, Teacher, User, Tutor
 import requests
 import json
 import logging
 
 
-def read_users_from_api():
-    r = requests.get(Config.API_URL+"userDb")
-    data = json.loads(r.text)
-    students = []
-    for line in data:
-        student = Student(telegram_id=line["telegram_id"], selected_language=line["selected_language"],
-                          completed_quizzes=line["quizzes"])
-        students.append(student)
-    return students
+def json_to_obj(json_obj, user_type):
+    print(json_obj)
+    if user_type == Config.STUDENTS:
+        return Student(telegram_id=json_obj["telegram_id"])
+    elif user_type == Config.USERS:
+        return User(telegram_id=json_obj["telegram_id"], selected_language=json_obj["selected_language"],
+                    user_state=json_obj["user_state"])
+    elif user_type == Config.TEACHERS:
+        return Teacher(telegram_id=json_obj["telegram_id"],
+                       students=json_obj["students"], referral=json_obj["referral"])
+    elif user_type == Config.TUTORS:
+        return Tutor(telegram_id=json_obj["telegram_id"])
+    else:
+        logging.info("Incorrect user type")
 
 
-async def post_user_to_api(user):
-    json_user = {
-        "telegram_id": user.telegram_id,
-        "selected_language": user.selected_language,
-        "quizzes": user.completed_quizzes
-    }
-    r = requests.post(Config.API_URL+"userDb", json_user)
-    print(r)
+# MARK: API interaction
 
 
-async def put_args_to_api(args):
-    r = requests.put(Config.API_URL+"userDb", json=args)
-    print(r)
+def get_users_from_api():
+    logging.info("Start get users from api")
+    users = {}
+    for user_type in Config.USER_DB:
+        r = requests.get(Config.API_URL + user_type)
+        data = json.loads(r.text)
+        objects = {}
+        for json_obj in data:
+            objects[json_obj["telegram_id"]] = json_to_obj(json_obj, user_type)
+        users[user_type] = objects
+    logging.info("Finish get users from api")
+    return users
+
+
+async def post_user_to_api(user, user_type):
+    print(user.to_json())
+    r = requests.post(Config.API_URL + user_type, json=user.to_json())
+    return json.loads(r.text)
+
+
+async def put_args_to_api(user, user_type):
+    print(user.to_json())
+    r = requests.put(Config.API_URL + user_type, json=user.to_json())
+    print(r.text)
 
 
 class UserService:
-    users = []
-    students = []
-    quizzes_for_user = {}
-    quiz_ids_for_user = {}
+    users = {}
 
-    def get_quiz_results(self, telegram_id):
-        return self.quizzes_for_user[telegram_id]
+    quiz_results = {}
+    quiz_ids = {}
+
+    # MARK: User quiz interaction
 
     def get_quiz_ids_for_user(self, telegram_id):
-        return self.quiz_ids_for_user[telegram_id][len(self.quizzes_for_user[telegram_id])]
+        return self.quiz_ids[telegram_id][len(self.quiz_results[telegram_id])]
 
     def set_quiz_ids_for_user(self, quiz_ids, telegram_id):
-        self.quiz_ids_for_user[telegram_id] = quiz_ids
+        self.quiz_ids[telegram_id] = quiz_ids
+
+    def get_quiz_results(self, telegram_id):
+        return self.quiz_results[telegram_id]
 
     def user_start_new_quiz(self, telegram_id):
-        self.quizzes_for_user[telegram_id] = []
-        self.quiz_ids_for_user[telegram_id] = []
+        self.quiz_results[telegram_id] = []
+        self.quiz_ids[telegram_id] = []
 
     def user_make_answer_for_quiz(self, telegram_id, is_option_correct, number):
-        self.quizzes_for_user[telegram_id].append(is_option_correct)
-        logging.info(f"User: {telegram_id}, answer on {len(self.quizzes_for_user[telegram_id])}")
-        if len(self.quizzes_for_user[telegram_id]) == number:
-            correct_answer_number = 0
-            for option in self.quizzes_for_user[telegram_id]:
-                if option:
-                    correct_answer_number += 1
-            return [True, correct_answer_number]
+        self.quiz_results[telegram_id].append(is_option_correct)
+        logging.info(f"User: {telegram_id}, answer on {len(self.quiz_results[telegram_id])}")
+        if len(self.quiz_results[telegram_id]) == number:
+            return True
         else:
-            return [False]
+            return False
 
-    def get_users(self):
-        self.students = read_users_from_api()
-
-    async def set_user_language(self, telegram_id, selected_language):
-        for student in self.students:
-            if student.telegram_id == telegram_id:
-                student.selected_language = selected_language
-        await put_args_to_api({"telegram_id": telegram_id, "selected_language": selected_language})
-
-    def get_user_language(self, telegram_id):
-        for student in self.students:
-            if student.telegram_id == telegram_id:
-                return student.selected_language
-        return "Русский"
+    # MARK: Users
 
     async def post_user(self, telegram_id):
-        for student in self.students:
-            if student.telegram_id == telegram_id:
-                return
-        student = Student(
-            telegram_id=telegram_id,
-            selected_language="Русский",
-            completed_quizzes=[]
-        )
-        self.students.append(student)
-        await post_user_to_api(student)
+        if telegram_id not in self.users[Config.USERS]:
+            for user_type in Config.USER_DB:
+                json_obj = await post_user_to_api(user=Config.USER_TYPE_MODEL[user_type](telegram_id=telegram_id),
+                                                  user_type=user_type)
+                self.users[user_type][telegram_id] = json_to_obj(json_obj=json_obj, user_type=user_type)
+            return True
+        return False
 
-    async def complete_quiz(self, telegram_id, quiz_id):
-        for student in self.students:
-            if student.telegram_id == telegram_id:
-                if quiz_id not in student.completed_quizzes:
-                    student.completed_quizzes.append(quiz_id)
-                    await put_args_to_api({"telegram_id": telegram_id, "quizzes": student.completed_quizzes})
+    def get_users(self):
+        self.users = get_users_from_api()
+
+    def user_exists(self, telegram_id):
+        return telegram_id in self.users[Config.USERS]
+
+    # MARK: Language
+
+    async def set_language(self, telegram_id, selected_language):
+        self.users[Config.USERS][telegram_id].selected_language = selected_language
+        await put_args_to_api(user=self.users[Config.USERS][telegram_id], user_type=Config.USERS)
+
+    def get_language(self, telegram_id):
+        return self.users[Config.USERS][telegram_id].selected_language
+
+    # MARK: User state
+
+    async def set_user_state(self, telegram_id, user_state):
+        self.users[Config.USERS][telegram_id].user_state = Config.DATA_USER_STATE[user_state]
+        await put_args_to_api(user=self.users[Config.USERS][telegram_id], user_type=Config.USERS)
+
+    def get_user_state(self, telegram_id):
+        if telegram_id in self.users[Config.USERS]:
+            return self.users[Config.USERS][telegram_id].user_state
+        else:
+            return ""
+
+    def is_student(self, telegram_id):
+        return self.get_user_state(telegram_id=telegram_id) == "Student"
+
+    def is_teacher(self, telegram_id):
+        return self.get_user_state(telegram_id=telegram_id) == "Teacher"
+
+    def is_tutor(self, telegram_id):
+        return self.get_user_state(telegram_id=telegram_id) == "Tutor"

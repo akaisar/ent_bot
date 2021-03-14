@@ -9,8 +9,8 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from services import quiz_service, user_service, session_service
 from config import Config
-from localization.localization import Localization
-import random
+from localization.localization import Localization, Data
+from utils import calc_results
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,133 +22,302 @@ user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
 session_s = session_service.SessionService()
 local = Localization()
-quizzes_number = 20
+quizzes_number = 3
 time_between_questions = 0.75
 
-topics = ["Қазақ тілі", "География рус", "Қазақстан Тарихы", "История Казахстана", "Биология рус"]
 
+# MARK: Send quiz
 
-async def send_poll(quiz, telegram_id):
+async def send_quiz(quiz, telegram_id):
     options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
                                                         correct_option_id=quiz.correct_option_id)
     msg = await bot.send_poll(chat_id=telegram_id, question=quiz.question,
                               is_anonymous=False, options=options, type="quiz",
                               correct_option_id=correct_option_id)
     sleep(time_between_questions)
-    quiz_s.post_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
+    quiz_s.set_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
 
 
-@dp.message_handler(commands=["start", "language"])
-async def cmd_start(message: types.Message):
-    logging.info(message.from_user)
-    await user_s.post_user(telegram_id=message.from_user.id)
+# MARK: Send message and buttons
+
+async def send_message_and_buttons(message, buttons, state, args=None):
+    if args is None:
+        args = []
+    if await go_to_start(message):
+        return
+    if type(message) is types.Message:
+        telegram_id = message.from_user.id
+    else:
+        telegram_id = message.user.id
+    language = user_s.get_language(telegram_id=telegram_id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    # if message.from_user.id in Config.ADMIN_IDS:
-    #     poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
-    #                                            request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
-    poll_keyboard.row(types.KeyboardButton(text="Қазақ"), types.KeyboardButton(text="Русский"))
-    await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
+    for index in range(0, len(buttons), 2):
+        button = types.KeyboardButton(local.data[buttons[index]][language])
+        if index != len(buttons) - 1:
+            button2 = types.KeyboardButton(local.data[buttons[index + 1]][language])
+            poll_keyboard.row(button, button2)
+        else:
+            poll_keyboard.add(button)
+    if type(message) is types.Message:
+        await message.answer(local.data[state][language].format(*args), reply_markup=poll_keyboard)
+    else:
+        await bot.send_message(chat_id=telegram_id, text=local.data[state][language].format(*args),
+                               reply_markup=poll_keyboard)
 
 
-@dp.message_handler(lambda message: local.check_text(["languages"], message.text))
-async def start_app(message: types.Message):
-    await user_s.post_user(telegram_id=message.from_user.id)
-    await user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
+# MARK: Send message if user not registered
+
+async def go_to_start(message):
+    if type(message) is types.Message:
+        telegram_id = message.from_user.id
+    else:
+        telegram_id = message.user.id
+    if user_s.user_exists(telegram_id=telegram_id):
+        return False
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
-                                                               telegram_id=message.from_user.id,
-                                                               user_s=user_s)))
-    await message.answer(local.get_text(text="start message", telegram_id=message.from_user.id, user_s=user_s),
-                         reply_markup=poll_keyboard)
+    for language in local.languages:
+        if type(message) is types.Message:
+            await message.answer(local.data[Data.NOT_REGISTERED_MESSAGE][language], reply_markup=poll_keyboard)
+        else:
+            await bot.send_message(chat_id=telegram_id, text=local.data[Data.NOT_REGISTERED_MESSAGE][language],
+                                   reply_markup=poll_keyboard)
+    return True
 
 
-@dp.message_handler(lambda message: local.check_text(["start button"], message.text))
-async def choose_topic(message: types.Message):
-    await user_s.post_user(telegram_id=message.from_user.id)
+# MARK: Start state
+
+@dp.message_handler(commands=["start"])
+async def start(message: types.Message):
+    telegram_id = message.from_user.id
+    is_new_user = await user_s.post_user(telegram_id=telegram_id)
+    language = user_s.get_language(telegram_id=telegram_id)
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for index in range(len(topics)):
-        if index % 2 == 0:
-            if index != len(topics)-1:
-                poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
-                                                                           telegram_id=message.from_user.id)),
-                                  types.KeyboardButton(text=local.get_text(text=topics[index+1], user_s=user_s,
-                                                                           telegram_id=message.from_user.id)))
+    poll_keyboard.add(types.KeyboardButton(text=local.data[Data.MAIN_MENU_BUTTON][language]))
+    if is_new_user:
+        for language in local.languages:
+            if local.languages[-1] != language:
+                await message.answer(text=local.data[Data.NEW_USERS_WELCOME_MESSAGE][language])
             else:
-                poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
-                                                                           telegram_id=message.from_user.id)))
-    await message.answer(local.get_text(text="select message", telegram_id=message.from_user.id,
-                                        user_s=user_s), reply_markup=poll_keyboard)
+                await message.answer(text=local.data[Data.NEW_USERS_WELCOME_MESSAGE][language],
+                                     reply_markup=poll_keyboard)
+    else:
+        await message.answer(text=local.data[Data.WELCOME_MESSAGE][language], reply_markup=poll_keyboard)
 
 
-@dp.message_handler(lambda message: local.check_text(texts=local.subjects, message=message.text))
-async def start_test(message: types.Message):
-    await user_s.post_user(telegram_id=message.from_user.id)
-    key_text = local.get_key(text=message.text)
-    user_s.user_start_new_quiz(message.from_user.id)
-    quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=key_text, number=quizzes_number)
-    user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=message.from_user.id)
-    session_s.create_session(telegram_id=message.from_user.id, quiz_ids=quiz_ids, topic_name=key_text)
+# MARK: Set language cmd state
+
+@dp.message_handler(commands=["language"])
+async def set_language_cmd(message: types.Message):
+    if await go_to_start(message):
+        return
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
-                                                               telegram_id=message.from_user.id,
-                                                               user_s=user_s)))
-    await message.answer(local.get_text(text="quiz number message", user_s=user_s, telegram_id=message.from_user.id)
-                         .format(quizzes_number), reply_markup=poll_keyboard)
-    await send_poll(telegram_id=message.chat.id,
-                    quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)))
+    for language in local.languages:
+        poll_keyboard.add(types.KeyboardButton(text=local.data[Data.SET_LANGUAGE_BUTTON][language]))
+        if local.languages[-1] != language:
+            await message.answer(text=local.data[Data.SET_LANGUAGE_MESSAGE][language])
+        else:
+            await message.answer(text=local.data[Data.SET_LANGUAGE_MESSAGE][language], reply_markup=poll_keyboard)
 
 
-# @dp.message_handler(content_types=["poll"])
-# async def msg_with_poll(message: types.Message):
-#     if message.from_user.id not in Config.ADMIN_IDS:
-#         return
-#     if message.poll.type != "quiz":
-#         await message.reply("Извините, я принимаю только викторины (quiz)!")
-#         return
-#     question = message.poll.question
-#     try:
-#         r = quiz_s.push_quiz_to_api(topic=question.split()[0], quiz_id=message.poll.id,
-#                                     question=' '.join(question.split()[1:]),
-#                                     options=[o.text for o in message.poll.options],
-#                                     correct_option_id=message.poll.correct_option_id,
-#                                     owner_id=message.from_user.id)
-#         await message.answer(r)
-#     except Exception as e:
-#         print(e)
-#         logging.info("can't reach api, question upload failed will continue with next poll creation")
+# MARK: Set language result state
 
+@dp.message_handler(lambda message: local.check_text([Data.SET_LANGUAGE_BUTTON], message.text)[0])
+async def set_language_result(message: types.Message):
+    if await go_to_start(message):
+        return
+    telegram_id = message.from_user.id
+    await user_s.set_language(telegram_id=telegram_id, selected_language=message.text)
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    poll_keyboard.add(types.KeyboardButton(local.data[Data.MAIN_MENU_BUTTON][message.text]))
+    await message.answer(local.data[Data.MAIN_MENU_MESSAGE][message.text], reply_markup=poll_keyboard)
+
+
+# MARK: Set user state cmd
+
+@dp.message_handler(commands=["user_state"])
+async def set_user_state_cmd(message: types.Message):
+    await send_message_and_buttons(message=message, buttons=local.user_state_buttons, state=Data.SET_USER_STATE_MESSAGE)
+
+
+# MARK: Set user state result
+
+@dp.message_handler(lambda message: local.check_text(local.user_state_buttons, message.text)[0])
+async def set_user_state_result(message: types.Message):
+    if await go_to_start(message):
+        return
+    telegram_id = message.from_user.id
+    language = user_s.get_language(telegram_id=telegram_id)
+    user_state = local.check_text(local.user_state_buttons, message.text)[1]
+    await user_s.set_user_state(telegram_id=telegram_id, user_state=user_state)
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    poll_keyboard.add(types.KeyboardButton(local.data[Data.MAIN_MENU_BUTTON][language]))
+    await message.answer(local.data[Data.MAIN_MENU_MESSAGE][language], reply_markup=poll_keyboard)
+
+
+# MARK: Student main menu state
+
+@dp.message_handler(lambda message: local.check_text([Data.MAIN_MENU_BUTTON], message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def student_main_menu(message: types.Message):
+    await send_message_and_buttons(message=message, buttons=local.student_main_menu_buttons,
+                                   state=Data.STUDENT_MAIN_MENU_MESSAGE)
+
+
+# MARK: Choose quiz topic state
+
+@dp.message_handler(lambda message: local.check_text([Data.START_QUIZ_BUTTON], message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def choose_quiz_topic(message: types.Message):
+    await send_message_and_buttons(message=message, buttons=local.subjects, state=Data.CHOOSE_QUIZ_TOPIC_MESSAGE)
+
+
+# MARK: Start new session
+
+@dp.message_handler(lambda message: local.check_text(local.subjects, message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def start_new_session(message: types.Message):
+    telegram_id = message.from_user.id
+    topic_in_data = local.check_text(local.subjects, message.text)[1]
+    topic_name = Config.DATA_SUBJECT_NAME[topic_in_data]
+    user_s.user_start_new_quiz(message.from_user.id)
+    quiz_ids = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=topic_name, number=quizzes_number)
+    user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=telegram_id)
+    session_s.create_session(telegram_id=telegram_id, quiz_ids=quiz_ids, topic_name=topic_name)
+    await send_message_and_buttons(message=message, buttons=[Data.CANCEL_SESSION_BUTTON],
+                                   state=Data.START_SESSION_MESSAGE, args=[message.text, quizzes_number])
+    await send_quiz(telegram_id=telegram_id, quiz=quiz_s.get_quiz_from_id(
+        quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)))
+
+
+# MARK: Cancel session
+
+@dp.message_handler(lambda message: local.check_text([Data.CANCEL_SESSION_BUTTON], message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def cancel_session(message: types.Message):
+    telegram_id = message.from_user.id
+    results = user_s.get_quiz_results(telegram_id)
+    session_s.post_session(telegram_id=telegram_id, results=results)
+    await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.RESULTS_MESSAGE,
+                                   args=calc_results(results=results))
+
+
+# MARK: Answer handler
 
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
-    await user_s.post_user(telegram_id=quiz_answer.user.id)
-    quiz_id = quiz_s.get_old_id(quiz_answer.poll_id)
-    await user_s.complete_quiz(quiz_id=quiz_id, telegram_id=quiz_answer.user.id)
-    data = user_s.user_make_answer_for_quiz(telegram_id=quiz_answer.user.id,
-                                            is_option_correct=quiz_s.is_option_correct(quiz_id=quiz_answer.poll_id,
-                                                                                       option=quiz_answer.option_ids[0])
-                                            , number=quizzes_number)
-    if data[0]:
-        poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        session_s.post_session(telegram_id=quiz_answer.user.id, results=user_s.get_quiz_results(
-            telegram_id=quiz_answer.user.id))
-        poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
-                                                                   telegram_id=quiz_answer.user.id,
-                                                                   user_s=user_s)))
-        await bot.send_message(chat_id=quiz_answer.user.id,
-                               text=local.get_text(text="result message",
-                                                   telegram_id=quiz_answer.user.id,
-                                                   user_s=user_s).format(data[1], quizzes_number))
-        await bot.send_message(chat_id=quiz_answer.user.id,
-                               text=local.get_text(text="restart message",
-                                                   telegram_id=quiz_answer.user.id,
-                                                   user_s=user_s), reply_markup=poll_keyboard)
+    telegram_id = quiz_answer.user.id
+    quiz_id = quiz_answer.poll_id
+    is_quiz_end = user_s.user_make_answer_for_quiz(telegram_id=telegram_id,
+                                                   is_option_correct=quiz_s.is_option_correct(
+                                                       quiz_id=quiz_id,
+                                                       option=quiz_answer.option_ids[0])
+                                                   , number=quizzes_number)
+    if is_quiz_end:
+        results = user_s.get_quiz_results(telegram_id)
+        session_s.post_session(telegram_id=telegram_id, results=results)
+        await send_message_and_buttons(quiz_answer, buttons=[Data.MAIN_MENU_BUTTON], state=Data.RESULTS_MESSAGE,
+                                       args=calc_results(results=results))
     else:
-        await send_poll(telegram_id=quiz_answer.user.id,
-                        quiz=quiz_s.get_quiz_from_id(
-                            quiz_id=user_s.get_quiz_ids_for_user(telegram_id=quiz_answer.user.id)))
+        await send_quiz(telegram_id=telegram_id,
+                        quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=telegram_id)))
+
+
+#
+# @dp.message_handler(commands=["start", "language"])
+# async def cmd_start(message: types.Message):
+#     logging.info(message.from_user)
+#     await user_s.post_user(telegram_id=message.from_user.id)
+#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+#     # if message.from_user.id in Config.ADMIN_IDS:
+#     #     poll_keyboard.add(types.KeyboardButton(text="Создать викторину",
+#     #                                            request_poll=types.KeyboardButtonPollType(type=types.PollType.QUIZ)))
+#     poll_keyboard.row(types.KeyboardButton(text="Қазақ"), types.KeyboardButton(text="Русский"))
+#     await message.answer("Тіл танданыз, Выберите язык", reply_markup=poll_keyboard)
+#
+#
+# @dp.message_handler(lambda message: local.check_text(["languages"], message.text))
+# async def start_app(message: types.Message):
+#     await user_s.post_user(telegram_id=message.from_user.id)
+#     await user_s.set_user_language(telegram_id=message.from_user.id, selected_language=message.text)
+#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+#     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
+#                                                                telegram_id=message.from_user.id,
+#                                                                user_s=user_s)))
+#     await message.answer(local.get_text(text="start message", telegram_id=message.from_user.id, user_s=user_s),
+#                          reply_markup=poll_keyboard)
+#
+#
+# @dp.message_handler(lambda message: local.check_text(["start button"], message.text))
+# async def choose_topic(message: types.Message):
+#     await user_s.post_user(telegram_id=message.from_user.id)
+#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+#     for index in range(len(topics)):
+#         if index % 2 == 0:
+#             if index != len(topics)-1:
+#                 poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
+#                                                                            telegram_id=message.from_user.id)),
+#                                   types.KeyboardButton(text=local.get_text(text=topics[index+1], user_s=user_s,
+#                                                                            telegram_id=message.from_user.id)))
+#             else:
+#                 poll_keyboard.row(types.KeyboardButton(text=local.get_text(text=topics[index], user_s=user_s,
+#                                                                            telegram_id=message.from_user.id)))
+#     await message.answer(local.get_text(text="select message", telegram_id=message.from_user.id,
+#                                         user_s=user_s), reply_markup=poll_keyboard)
+#
+#
+# @dp.message_handler(lambda message: local.check_text(texts=local.subjects, message=message.text))
+# async def start_test(message: types.Message):
+#     await user_s.post_user(telegram_id=message.from_user.id)
+#     key_text = local.get_key(text=message.text)
+#     user_s.user_start_new_quiz(message.from_user.id)
+#     quiz_ids = quiz_s.load_few_quizzes_from_topic(topic_name=key_text, number=quizzes_number)
+#     user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=message.from_user.id)
+#     session_s.create_session(telegram_id=message.from_user.id, quiz_ids=quiz_ids, topic_name=key_text)
+#     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+#     poll_keyboard.add(types.KeyboardButton(text=local.get_text(text="start button",
+#                                                                telegram_id=message.from_user.id,
+#                                                                user_s=user_s)))
+#     await message.answer(local.get_text(text="quiz number message", user_s=user_s, telegram_id=message.from_user.id)
+#                          .format(quizzes_number), reply_markup=poll_keyboard)
+#     await send_poll(telegram_id=message.chat.id,
+#                     quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)))
+#
+#
+# # @dp.message_handler(content_types=["poll"])
+# # async def msg_with_poll(message: types.Message):
+# #     if message.from_user.id not in Config.ADMIN_IDS:
+# #         return
+# #     if message.poll.type != "quiz":
+# #         await message.reply("Извините, я принимаю только викторины (quiz)!")
+# #         return
+# #     question = message.poll.question
+# #     try:
+# #         r = quiz_s.push_quiz_to_api(topic=question.split()[0], quiz_id=message.poll.id,
+# #                                     question=' '.join(question.split()[1:]),
+# #                                     options=[o.text for o in message.poll.options],
+# #                                     correct_option_id=message.poll.correct_option_id,
+# #                                     owner_id=message.from_user.id)
+# #         await message.answer(r)
+# #     except Exception as e:
+# #         print(e)
+# #         logging.info("can't reach api, question upload failed will continue with next poll creation")
+#
+#
+
+
+@dp.message_handler()
+async def default_response(message: types.Message):
+    if await go_to_start(message):
+        return
+    telegram_id = message.from_user.id
+    language = user_s.get_language(telegram_id=telegram_id)
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    poll_keyboard.add(local.data[Data.MAIN_MENU_BUTTON][language])
+    await message.answer(local.data[Data.MAIN_MENU_MESSAGE][language], reply_markup=poll_keyboard)
 
 
 if __name__ == "__main__":
     user_s.get_users()
+    quiz_s.load_quizzes()
     executor.start_polling(dp, skip_updates=True)

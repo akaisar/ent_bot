@@ -7,100 +7,92 @@ import random
 import logging
 
 
-def get_request_from_api(suffix):
-    return requests.get(Config.API_URL + suffix)
+def json_to_obj(json_obj):
+    print(json_obj)
+    return Quiz(
+        topic=json_obj["topic"],
+        quiz_id=json_obj["quiz_id"],
+        question=json_obj["question"],
+        options=json_obj["options"].split("$"),
+        correct_option_id=json_obj["correct_option_id"],
+        owner_id=json_obj["owner"]
+    )
+
+# MARK: API interaction
+
+
+def get_quizzes_from_api():
+    r = requests.get(Config.API_URL+Config.QUIZ_DB)
+    data = json.loads(r.text)
+    quizzes = {}
+    quiz_topic = {}
+    for json_obj in data:
+        topic = json_obj["topic"]
+        quiz_id = json_obj["quiz_id"]
+        if topic not in quizzes:
+            quizzes[topic] = {}
+        quizzes[topic][quiz_id] = json_to_obj(json_obj=json_obj)
+        quiz_topic[quiz_id] = topic
+    return quizzes, quiz_topic
+
+
+def post_quiz_to_api(quiz):
+    r = requests.post(Config.API_URL+Config.QUIZ_DB, json=quiz.to_json())
+    logging.info(r)
 
 
 class QuizService:
-    quizzes_from_topic = {}
+    quizzes = {}
+    quiz_topic = {}
     quizzes_ids_connection = {}
     correct_option_id = {}
 
+    # MARK: Load quizzes to cash
+
+    def load_quizzes(self):
+        self.quizzes, self.quiz_topic = get_quizzes_from_api()
+
+    # MARK: Post quiz to api
+
+    @staticmethod
+    def post_quiz(json_obj):
+        post_quiz_to_api(json_to_obj(json_obj))
+
+    # MARK: Return quiz by quiz_id
+
     def get_quiz_from_id(self, quiz_id):
-        for topic, quizzes in self.quizzes_from_topic.items():
-            for quiz in quizzes:
-                if quiz.quiz_id == quiz_id:
-                    return quiz
+        return self.quizzes[self.quiz_topic[quiz_id]][quiz_id]
 
-    def load_quizzes_from_topic(self, topic_name):
-        if topic_name in self.quizzes_from_topic:
-            return self.quizzes_from_topic[topic_name]
-        quizzes = []
-        data = get_request_from_api(f'quizDb/{topic_name}/')
-        cnt_quizzes = 0
-        for detail in json.loads(data.text):
-            if len(detail["options"].split("$")) < 2:
-                continue
-            cnt_quizzes += 1
-            try:
-                quiz = Quiz(
-                    topic=detail["topic"],
-                    quiz_id=detail["quiz_id"],
-                    question=detail["question"],
-                    options=detail["options"].split("$"),
-                    correct_option_id=detail["correct_option_id"],
-                    owner_id=detail["owner"]
-                )
-                quizzes.append(quiz)
-            except Exception as e:
-                print(e)
-        logging.info(cnt_quizzes)
-        logging.info(len(quizzes))
-        self.quizzes_from_topic[topic_name] = quizzes
-        return quizzes
+    # MARK: Return specified number of quizzes by topic
 
-    def load_few_quizzes_from_topic(self, topic_name, number):
-        quizzes = self.load_quizzes_from_topic(topic_name=topic_name)
-        random.shuffle(quizzes)
-        if len(quizzes) == 0:
-            return []
+    def get_specified_number_of_quizzes_by_topic(self, topic_name, number):
         quiz_ids = []
-        for quiz in quizzes:
-            quiz_ids.append(quiz.quiz_id)
-        return quiz_ids[:min(number, len(quizzes))]
+        for quiz_id, quiz in self.quizzes[topic_name].items():
+            quiz_ids.append(quiz_id)
+        random.shuffle(quiz_ids)
+        return quiz_ids[:min(number, len(quiz_ids))]
 
-    def push_quiz_to_api(self, topic, quiz_id, question, options, correct_option_id, owner_id):
-        quiz = Quiz(
-            topic=topic,
-            quiz_id=quiz_id,
-            question=question,
-            options=options,
-            correct_option_id=correct_option_id,
-            owner_id=owner_id
-        )
-        if quiz.topic in self.quizzes_from_topic:
-            self.quizzes_from_topic[quiz.topic].append(quiz)
-        else:
-            self.quizzes_from_topic[quiz.topic] = []
-            self.quizzes_from_topic[quiz.topic].append(quiz)
-        quiz_json = {
-            "topic": topic,
-            "quiz_id": quiz_id,
-            "question": question,
-            "options": "$".join(options),
-            "correct_option_id": correct_option_id,
-            "owner": owner_id,
-            "winners": "1",
-            "chat_id": 1,
-            "message_id": 1,
-        }
-        print(json.dumps(quiz_json))
-        print("post quiz to api")
-        r = requests.post(Config.API_URL + 'quizDb', json=json.loads(json.dumps(quiz_json)))
-        logging.info(r)
-        return r
+    # MARK: Quiz ids connection
 
     def connect_ids(self, new_id, old_id):
         self.quizzes_ids_connection[new_id] = old_id
 
+    # MARK: Get quiz id in DB
+
     def get_old_id(self, new_id):
         return self.quizzes_ids_connection[new_id]
+
+    # MARK: Check option
 
     def is_option_correct(self, option, quiz_id):
         return self.correct_option_id[quiz_id] == option
 
-    def post_correct_option_id(self, quiz_id, option_id):
+    # MARK: Set correct option
+
+    def set_correct_option_id(self, quiz_id, option_id):
         self.correct_option_id[quiz_id] = option_id
+
+    # MARK: Shuffle options
 
     @staticmethod
     def shuffle_options(options, correct_option_id):

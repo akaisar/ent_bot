@@ -27,20 +27,22 @@ transform_option = {
 }
 output = []
 
-# with open("local_db_2.txt", "r") as f:
-#     data = f.read()
-#     data = json.loads(data)
-#     for json_quiz in data:
-#         json_quiz2 = {
-#             "topic": json_quiz["topic"],
-#             "question": json_quiz["question"],
-#             "options": json_quiz["options"],
-#             "correct_option_id": json_quiz["correct_option_id"],
-#             "owner": 0,
-#             "winners": "1",
-#             "chat_id": 1,
-#             "message_id": 1,
-#         }
-#         print(json_quiz2)
-#         r = requests.post(Config.API_URL + 'quizDb', json=json_quiz2)
-#         print(r)
+with open("local_db_3.txt", "r") as f:
+    data = f.read()
+    data = json.loads(data)
+    cnt = 0
+    sz = len(data)
+    for json_quiz in data:
+        json_quiz2 = {
+            "topic": json_quiz["topic"],
+            "question": json_quiz["question"],
+            "options": json_quiz["options"],
+            "correct_option_id": json_quiz["correct_option_id"],
+            "owner": 0,
+            "winners": "1",
+            "message_id": 1,
+        }
+        cnt += 1
+        print(cnt*100/sz, "%")
+        r = requests.post(Config.API_URL + Config.QUIZ_DB, json=json_quiz2)
+        print(r.text)
