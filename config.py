@@ -12,12 +12,12 @@ class Config:
     TUTORS = "tutors"
     USER_DB = [USERS, TEACHERS, STUDENTS]
     USER_STATE = ["Teacher", "Student", "Tutor"]
-    SUBJECT_NAMES = ["Қазақ тілі", "Русский язык", "География ru", "География kaz", "Ағылшын тілі ru",
-                     "Ағылшын тілі kaz", "Қазақстан тарихы kaz", "Қазақстан тарихы ru", "Биология ru",
-                     "Биология kaz", "Дүние жүзі тарихы ru", "Дүние жүзі тарихы kaz"]
+    SUBJECT_NAMES = ["Қазақ тілі", "Русский язык all", "География ru", "География kz", "Ағылшын тілі ru",
+                     "Ағылшын тілі kz", "Қазақстан тарихы kz", "Қазақстан тарихы ru", "Биология ru",
+                     "Биология kz", "Дүние жүзі тарихы ru", "Дүние жүзі тарихы kz", "Әдебиет ru", "Әдебиет kz"]
     DATA_SUBJECT_NAME = {
         Data.KAZAKH_LANGUAGE: "Қазақ тілі",
-        Data.RUSSIAN_LANGUAGE: "Русский язык",
+        Data.RUSSIAN_LANGUAGE: "Русский язык all",
         Data.BIOLOGY_RUS: "Биология ru",
         Data.BIOLOGY_KAZ: "Биология kz",
         Data.KAZ_HISTORY_KAZ: "Қазақстан тарихы kz",
@@ -33,7 +33,7 @@ class Config:
     }
     SUBJECT_NAME_DATA = {
         "Қазақ тілі": Data.KAZAKH_LANGUAGE,
-        "Русский язык": Data.RUSSIAN_LANGUAGE,
+        "Русский язык all": Data.RUSSIAN_LANGUAGE,
         "География ru": Data.GEOGRAPHY_RUS,
         "География kz": Data.GEOGRAPHY_KAZ,
         "Ағылшын тілі ru": Data.ENGLISH_RUS,

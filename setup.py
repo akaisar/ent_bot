@@ -28,6 +28,7 @@ local = Localization()
 quizzes_number = 20
 time_between_questions = 0.75
 
+
 # MARK: Send students like button
 
 async def send_students_like_button(message, state):
