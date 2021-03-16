@@ -243,7 +243,7 @@ class Localization:
             Data.KAZAKH: "География (қаз. т.)"
         },
         Data.RUSSIAN_LANGUAGE: {
-            Data.RUSSIAN: "Руссский язык",
+            Data.RUSSIAN: "Русский язык",
             Data.KAZAKH: "Орыс тілі"
         },
         Data.KAZAKH_LANGUAGE: {

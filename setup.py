@@ -25,7 +25,7 @@ user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
 session_s = session_service.SessionService()
 local = Localization()
-quizzes_number = 3
+quizzes_number = 20
 time_between_questions = 0.75
 
 # MARK: Send students like button
