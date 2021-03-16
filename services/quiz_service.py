@@ -8,9 +8,8 @@ import logging
 
 
 def json_to_obj(json_obj):
-    print(json_obj)
     return Quiz(
-        topic=json_obj["topic"],
+        topic=Config.SUBJECT_NAME_DATA[json_obj["topic"]],
         quiz_id=json_obj["quiz_id"],
         question=json_obj["question"],
         options=json_obj["options"].split("$"),
@@ -22,17 +21,19 @@ def json_to_obj(json_obj):
 
 
 def get_quizzes_from_api():
+    logging.info("Start load quizzes from api")
     r = requests.get(Config.API_URL+Config.QUIZ_DB)
     data = json.loads(r.text)
     quizzes = {}
     quiz_topic = {}
     for json_obj in data:
-        topic = json_obj["topic"]
+        topic = Config.SUBJECT_NAME_DATA[json_obj["topic"]]
         quiz_id = json_obj["quiz_id"]
         if topic not in quizzes:
             quizzes[topic] = {}
         quizzes[topic][quiz_id] = json_to_obj(json_obj=json_obj)
         quiz_topic[quiz_id] = topic
+    logging.info("Finish load quizzes from api")
     return quizzes, quiz_topic
 
 

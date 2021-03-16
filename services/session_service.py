@@ -9,7 +9,7 @@ def post_session(session):
     if len(session.results) == 0:
         return
     json_session = {
-        "topic_name": session.topic_name,
+        "topic_name": Config.DATA_SUBJECT_NAME[session.topic_name],
         "owner_id": [session.telegram_id],
         "quizzes": session.quiz_ids[:len(session.results)],
         "results": session.results

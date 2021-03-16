@@ -1,5 +1,7 @@
 from typing import List
 from json import JSONEncoder
+from localization.localization import Data
+import config
 
 
 class Session:
@@ -25,8 +27,7 @@ class Quiz:
 
     def to_json(self):
         return {
-            "topic": self.topic,
-
+            "topic": self.topic
         }
 
 
@@ -37,16 +38,21 @@ class AbstractUser:
 
 class User(AbstractUser):
 
-    def __init__(self, telegram_id, user_state="Student", selected_language="Русский"):
+    def __init__(self, telegram_id, user_state=Data.STUDENT, selected_language=Data.RUSSIAN, name=""):
         super().__init__(telegram_id)
+        if name == "":
+            self.name = "User-" + str(telegram_id % 100)
+        else:
+            self.name = name
         self.selected_language = selected_language
         self.user_state = user_state
 
     def to_json(self):
         return {
             "telegram_id": self.telegram_id,
-            "selected_language": self.selected_language,
-            "user_state": self.user_state
+            "name": self.name,
+            "selected_language": config.Config.DATA_LANGUAGE[self.selected_language],
+            "user_state": config.Config.DATA_USER_STATE[self.user_state]
         }
 
 

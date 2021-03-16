@@ -12,23 +12,40 @@ class Config:
     TUTORS = "tutors"
     USER_DB = [USERS, TEACHERS, STUDENTS]
     USER_STATE = ["Teacher", "Student", "Tutor"]
-    DATA_USER_STATE = {
-        Data.TEACHER: "Teacher",
-        Data.STUDENT: "Student",
-        Data.TUTOR: "Tutor"
-    }
-
-    SUBJECT_NAMES = ["Биология рус", "География рус", "Қазақ тілі", "Қазақстан Тарихы", "История Казахстана",
-                     "Русский"]
+    SUBJECT_NAMES = ["Қазақ тілі", "Русский язык", "География ru", "География kaz", "Ағылшын тілі ru",
+                     "Ағылшын тілі kaz", "Қазақстан тарихы kaz", "Қазақстан тарихы ru", "Биология ru",
+                     "Биология kaz", "Дүние жүзі тарихы ru", "Дүние жүзі тарихы kaz"]
     DATA_SUBJECT_NAME = {
         Data.KAZAKH_LANGUAGE: "Қазақ тілі",
-        Data.RUSSIAN_LANGUAGE: "Қазақ тілі",
-        Data.BIOLOGY_RUS: "Қазақ тілі",
-        Data.BIOLOGY_KAZ: "Қазақ тілі",
-        Data.KAZ_HISTORY_KAZ: "Қазақ тілі",
-        Data.KAZ_HISTORY_RUS: "Қазақ тілі",
-        Data.GEOGRAPHY_RUS: "Қазақ тілі",
-        Data.GEOGRAPHY_KAZ: "Қазақ тілі"
+        Data.RUSSIAN_LANGUAGE: "Русский язык",
+        Data.BIOLOGY_RUS: "Биология ru",
+        Data.BIOLOGY_KAZ: "Биология kz",
+        Data.KAZ_HISTORY_KAZ: "Қазақстан тарихы kz",
+        Data.KAZ_HISTORY_RUS: "Қазақстан тарихы ru",
+        Data.GEOGRAPHY_RUS: "География ru",
+        Data.GEOGRAPHY_KAZ: "География kz",
+        Data.ENGLISH_KAZ: "Ағылшын тілі kz",
+        Data.ENGLISH_RUS: "Ағылшын тілі ru",
+        Data.WORLD_HISTORY_RUS: "Дүние жүзі тарихы ru",
+        Data.WORLD_HISTORY_KAZ: "Дүние жүзі тарихы kz",
+        Data.LITERATURE_KAZ: "Әдебиет kz",
+        Data.LITERATURE_RUS: "Әдебиет ru"
+    }
+    SUBJECT_NAME_DATA = {
+        "Қазақ тілі": Data.KAZAKH_LANGUAGE,
+        "Русский язык": Data.RUSSIAN_LANGUAGE,
+        "География ru": Data.GEOGRAPHY_RUS,
+        "География kz": Data.GEOGRAPHY_KAZ,
+        "Ағылшын тілі ru": Data.ENGLISH_RUS,
+        "Ағылшын тілі kz": Data.ENGLISH_KAZ,
+        "Биология ru": Data.BIOLOGY_RUS,
+        "Биология kz": Data.ENGLISH_KAZ,
+        "Қазақстан тарихы kz": Data.KAZ_HISTORY_KAZ,
+        "Қазақстан тарихы ru": Data.KAZ_HISTORY_RUS,
+        "Дүние жүзі тарихы kz": Data.WORLD_HISTORY_KAZ,
+        "Дүние жүзі тарихы ru": Data.WORLD_HISTORY_RUS,
+        "Әдебиет kz": Data.LITERATURE_KAZ,
+        "Әдебиет ru": Data.LITERATURE_RUS
     }
     QUIZ_DB = "questions"
     SESSION_DB = "sessions"
@@ -36,6 +53,24 @@ class Config:
         USERS: ["current_type", "telegram_id", "selected_language"],
         TEACHERS: ["telegram_id", "selected_language", "referral", "students"],
         STUDENTS: ["telegram_id", "selected_language"]
+    }
+    DATA_USER_STATE = {
+        Data.TEACHER: "Teacher",
+        Data.STUDENT: "Student",
+        Data.TUTOR: "Tutor"
+    }
+    USER_STATE_DATA = {
+        "Teacher": Data.TEACHER,
+        "Student": Data.STUDENT,
+        "Tutor": Data.TUTOR
+    }
+    LANGUAGE_DATA = {
+        "Русский": Data.RUSSIAN,
+        "Қазақ": Data.KAZAKH
+    }
+    DATA_LANGUAGE = {
+        Data.RUSSIAN: "Русский",
+        Data.KAZAKH: "Қазақ"
     }
     # students, referral, telegram_id, selected_language
     USER_TYPE_MODEL = {

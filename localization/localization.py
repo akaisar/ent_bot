@@ -4,12 +4,12 @@ from enum import Enum, auto
 class Data(Enum):
     NEW_USERS_WELCOME_MESSAGE = 0
     WELCOME_MESSAGE = 1
-    SET_LANGUAGE_BUTTON = 2
+    KAZAKH = 2
     MAIN_MENU_BUTTON = 3
     NOT_REGISTERED_MESSAGE = 4
     SET_LANGUAGE_MESSAGE = 5
     MAIN_MENU_MESSAGE = 6
-    USER_STATE_BUTTONS = 7
+    USER_NAME_BUTTON = 7
     TEACHER = 8
     STUDENT = 9
     TUTOR = 10
@@ -36,185 +36,283 @@ class Data(Enum):
     RESULTS_MESSAGE = 31
     INPUT_REFERRAL_MESSAGE = 32
     TEACHER_ADD_SUCCESS_MESSAGE = 33
-    TEACHER_ADD_UNSUCCESS_MESSAGE = 34
+    TEACHER_ADD_UN_SUCCESS_MESSAGE = 34
     STUDENT_PAYMENT_MESSAGE = 35
     TEACHER_STATS_BUTTON = 37
     TEACHER_PAYMENT_MESSAGE = 38
     TEACHER_REFERRAL_BUTTON = 39
     TEACHER_REFERRAL_MESSAGE = 40
     STUDENT_STATS_MESSAGE = 41
+    PROFILE_MESSAGE = 42
+    LANGUAGE_BUTTON = 43
+    USER_STATE_BUTTON = 44
+    PROFILE_BUTTON = 45
+    RUSSIAN = 46
+    SET_NAME_SUCCESS_MESSAGE = 47
+    INPUT_NAME_MESSAGE = 48
+    SUBJECT_INFO_FORMAT_MESSAGE = 49
+    SUBJECT_INFO_MESSAGE = 50
+    DELETE_STUDENT_FROM_TEACHER_BUTTON = 51
+    DELETE_STUDENT_FROM_TEACHER_MESSAGE = 52
+    ENGLISH_RUS = 53
+    ENGLISH_KAZ = 54
+    WORLD_HISTORY_RUS = 55
+    WORLD_HISTORY_KAZ = 56
+    LITERATURE_RUS = 57
+    LITERATURE_KAZ = 58
+    ANSWER_BELOW = 59
+    TEACHER_DELETE_STUDENT_SUCCESS_MESSAGE = 60
+    TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE = 61
 
 
 class Localization:
-    languages = ["Қазақ", "Русский"]
+    languages = [Data.KAZAKH, Data.RUSSIAN]
     student_main_menu_buttons = [Data.START_QUIZ_BUTTON, Data.ADD_TEACHER_BUTTON, Data.STUDENT_STATS_BUTTON,
-                                 Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON]
-    teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON, Data.TEACHER_REFERRAL_BUTTON]
+                                 Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON, Data.PROFILE_BUTTON]
+    teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON, Data.TEACHER_REFERRAL_BUTTON,
+                                 Data.PROFILE_BUTTON]
     user_state_buttons = [Data.TEACHER, Data.STUDENT, Data.TUTOR]
     subjects = [Data.KAZ_HISTORY_KAZ, Data.KAZ_HISTORY_RUS, Data.KAZAKH_LANGUAGE, Data.RUSSIAN_LANGUAGE,
-                Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_RUS, Data.BIOLOGY_KAZ]
+                Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_KAZ, Data.BIOLOGY_RUS, Data.ENGLISH_KAZ,
+                Data.ENGLISH_RUS, Data.WORLD_HISTORY_KAZ, Data.WORLD_HISTORY_RUS, Data.LITERATURE_KAZ,
+                Data.LITERATURE_RUS]
+    profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.MAIN_MENU_BUTTON]
     data = {
+        Data.TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE: {
+            Data.RUSSIAN: "Вы ввели не верные данные попробуйте снова",
+            Data.KAZAKH: "Сіз қате деректерді енгіздіңіз қайталап көріңіз"
+        },
+        Data.TEACHER_DELETE_STUDENT_SUCCESS_MESSAGE: {
+            Data.RUSSIAN: "Ученик успешно удален",
+            Data.KAZAKH: "Оқушы сәтті өшірілді"
+        },
+        Data.ANSWER_BELOW: {
+            Data.RUSSIAN: "Ответте на вопрос выше",
+            Data.KAZAKH: "Үстіндегі сұраққа жауап берініз"
+        },
+        Data.LITERATURE_KAZ: {
+            Data.RUSSIAN: "Казахская литература",
+            Data.KAZAKH: "Қазақ әдебиеті"
+        },
+        Data.LITERATURE_RUS: {
+            Data.RUSSIAN: "Русская литература",
+            Data.KAZAKH: "Орыс әдебиеті"
+        },
+        Data.WORLD_HISTORY_KAZ: {
+            Data.RUSSIAN: "Всемирная история (каз. яз.)",
+            Data.KAZAKH: "Всемирная история (қаз. т.)"
+        },
+        Data.WORLD_HISTORY_RUS: {
+            Data.RUSSIAN: "Всемирная история (рус. яз.)",
+            Data.KAZAKH: "Всемирная история (о. т.)"
+        },
+        Data.ENGLISH_KAZ: {
+            Data.RUSSIAN: "Английский язык (каз. яз.)",
+            Data.KAZAKH: "Ағылшын тілі (қаз. т.)"
+        },
+        Data.ENGLISH_RUS: {
+            Data.RUSSIAN: "Английский язык (рус. яз.)",
+            Data.KAZAKH: "Ағылшын тілі (о. т.)"
+        },
+        Data.DELETE_STUDENT_FROM_TEACHER_MESSAGE: {
+            Data.RUSSIAN: "Выберите какого ученика вы хотите удалить",
+            Data.KAZAKH: "Өшіргініз келіп тұрган оқушыны танданыз"
+        },
+        Data.DELETE_STUDENT_FROM_TEACHER_BUTTON: {
+            Data.RUSSIAN: "Удалить ученика",
+            Data.KAZAKH: "Оқушыны өшіру"
+        },
+        Data.SUBJECT_INFO_FORMAT_MESSAGE: {
+            Data.RUSSIAN: "Предмет / Количество вопросов / Доля правильных",
+            Data.KAZAKH: "Пән / Сурақ саны / Дурыс бөлшегі"
+        },
+        Data.INPUT_NAME_MESSAGE: {
+            Data.RUSSIAN: "Введите имя",
+            Data.KAZAKH: "Есімінізді енгізініз"
+        },
+        Data.SET_NAME_SUCCESS_MESSAGE: {
+            Data.RUSSIAN: "Имя успешно изменено",
+            Data.KAZAKH: "Есімініз сәтті өзгертілді"
+        },
+        Data.RUSSIAN: {
+            Data.RUSSIAN: "Русский",
+            Data.KAZAKH: "Орыс"
+        },
+        Data.KAZAKH: {
+            Data.RUSSIAN: "Казахский",
+            Data.KAZAKH: "Қазақ"
+        },
+        Data.PROFILE_BUTTON: {
+            Data.RUSSIAN: "Профиль",
+            Data.KAZAKH: "Профиль"
+        },
+        Data.PROFILE_MESSAGE: {
+            Data.RUSSIAN: "Ваш профиль:\n{}",
+            Data.KAZAKH: "Сіздін профилініз:\n{}"
+        },
+        Data.USER_STATE_BUTTON: {
+            Data.RUSSIAN: "Режим",
+            Data.KAZAKH: "Режим"
+        },
+        Data.LANGUAGE_BUTTON: {
+            Data.RUSSIAN: "Язык",
+            Data.KAZAKH: "Тіл"
+        },
+        Data.USER_NAME_BUTTON: {
+            Data.RUSSIAN: "Имя",
+            Data.KAZAKH: "Есім"
+        },
         Data.STUDENT_STATS_MESSAGE: {
-            "Русский": "Telegram id: {}\nКоличество правильных ответов за все время: {}\n"
-                       "Общее количество ответов за все время: {}\nКоличество правильных ответов за 7 дней: {}\n"
-                       "Общее количество ответов за 7 дней: {}\nДата создания: {}",
-            "Қазақ": "Telegram id: {}\nДурыс жауап саны: {}\n"
-                     "Жауап жалпы саны : {}\n7 күнгі дурыс жауап саны: {}\n"
-                     "7 күнгі жалпы жауап саны: {}\nТіркелу күні: {}",
+            Data.RUSSIAN: "Имя: {}\nКоличество правильных ответов за все время: {}\n"
+                          "Общее количество ответов за все время: {}\nКоличество правильных ответов за 7 дней: {}\n"
+                          "Общее количество ответов за 7 дней: {}\nДата создания: {}\n",
+            Data.KAZAKH: "№{}\nЕсімі: {}\nДурыс жауап саны: {}\n"
+                         "Жауап жалпы саны : {}\n7 күнгі дурыс жауап саны: {}\n"
+                         "7 күнгі жалпы жауап саны: {}\nТіркелу күні: {}\n",
         },
         Data.TEACHER_REFERRAL_MESSAGE: {
-            "Русский": "Ваша реферальная ссылка {}",
-            "Қазақ": "Сіздің реферал сілтеменіз {}"
+            Data.RUSSIAN: "Ваша реферальная ссылка",
+            Data.KAZAKH: "Сіздің реферал сілтеменіз"
         },
         Data.TEACHER_REFERRAL_BUTTON: {
-            "Русский": "Реферальная ссылка",
-            "Қазақ": "Реферал сілтеме"
+            Data.RUSSIAN: "Реферальная ссылка",
+            Data.KAZAKH: "Реферал сілтеме"
         },
         Data.TEACHER_PAYMENT_MESSAGE: {
-            "Русский": "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
-            "Қазақ": "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
+            Data.RUSSIAN: "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
+            Data.KAZAKH: "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
         },
         Data.TEACHER_STATS_BUTTON: {
-            "Русский": "Статистика учеников",
-            "Қазақ": "Оқушылар статистикасы"
+            Data.RUSSIAN: "Статистика учеников",
+            Data.KAZAKH: "Оқушылар статистикасы"
         },
         Data.STUDENT_PAYMENT_MESSAGE: {
-            "Русский": "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
-            "Қазақ": "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
+            Data.RUSSIAN: "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
+            Data.KAZAKH: "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
         },
-        Data.TEACHER_ADD_UNSUCCESS_MESSAGE: {
-            "Русский": "Учителя с таким кодом не существует\nПопробуйте заново",
-            "Қазақ": "Мұндай кодпен ұстаз жоқ\nҚайтадан көрініз"
+        Data.TEACHER_ADD_UN_SUCCESS_MESSAGE: {
+            Data.RUSSIAN: "Учителя с таким кодом не существует\nПопробуйте заново",
+            Data.KAZAKH: "Мұндай кодпен ұстаз жоқ\nҚайтадан көрініз"
         },
         Data.TEACHER_ADD_SUCCESS_MESSAGE: {
-            "Русский": "Вы были успешно добавлены к учителю\nЧтобы вернуться в меню нажмите кнопку",
-            "Қазақ": "Сіз ұстаға сәтті тіркелдініз\nҚайту үшін батырманы басыныз"
+            Data.RUSSIAN: "Вы были успешно добавлены к учителю",
+            Data.KAZAKH: "Сіз ұстаға сәтті тіркелдініз"
         },
         Data.INPUT_REFERRAL_MESSAGE: {
-            "Русский": "Введите код",
-            "Қазақ": "Кодты енгізініз"
+            Data.RUSSIAN: "Введите код",
+            Data.KAZAKH: "Кодты енгізініз"
         },
         Data.RESULTS_MESSAGE: {
-            "Русский": "Ваш результат: {} : {}",
-            "Қазақ": "Cіздің нәтиженіз: {} : {}"
+            Data.RUSSIAN: "Ваш результат: {} : {}",
+            Data.KAZAKH: "Cіздің нәтиженіз: {} : {}"
         },
         Data.CANCEL_BUTTON: {
-            "Русский": "Отмена",
-            "Қазақ": "Бас тарту"
+            Data.RUSSIAN: "Отмена",
+            Data.KAZAKH: "Бас тарту"
         },
         Data.START_SESSION_MESSAGE: {
-            "Русский": "Предмет: {}, Общее количество вопросов: {}",
-            "Қазақ": "Сабақ: {}, Сұрақ жалпы саны: {}"
+            Data.RUSSIAN: "Предмет: {}, Общее количество вопросов: {}",
+            Data.KAZAKH: "Сабақ: {}, Сұрақ жалпы саны: {}"
         },
         Data.CHOOSE_QUIZ_TOPIC_MESSAGE: {
-            "Русский": "Выберите предмет",
-            "Қазақ": "Сабақты таңданыз"
+            Data.RUSSIAN: "Выберите предмет",
+            Data.KAZAKH: "Сабақты таңданыз"
         },
         Data.KAZ_HISTORY_RUS: {
-            "Русский": "История Казахстана (рус.яз.)",
-            "Қазақ": "Қазақстан Тарихы (о. т.)"
+            Data.RUSSIAN: "История Казахстана (рус.яз.)",
+            Data.KAZAKH: "Қазақстан Тарихы (о. т.)"
         },
         Data.KAZ_HISTORY_KAZ: {
-            "Русский": "История Казахстана (каз. яз.)",
-            "Қазақ": "Қазақстан Тарихы (қаз. т.)"
+            Data.RUSSIAN: "История Казахстана (каз. яз.)",
+            Data.KAZAKH: "Қазақстан Тарихы (қаз. т.)"
         },
         Data.BIOLOGY_KAZ: {
-            "Русский": "Биология (каз. яз.)",
-            "Қазақ": "Биология (қаз. т.)"
+            Data.RUSSIAN: "Биология (каз. яз.)",
+            Data.KAZAKH: "Биология (қаз. т.)"
         },
         Data.BIOLOGY_RUS: {
-            "Русский": "Биология (рус.яз.)",
-            "Қазақ": "Биология (о. т.)"
+            Data.RUSSIAN: "Биология (рус.яз.)",
+            Data.KAZAKH: "Биология (о. т.)"
         },
         Data.GEOGRAPHY_RUS: {
-            "Русский": "География (рус.яз.)",
-            "Қазақ": "География (о. т.)"
+            Data.RUSSIAN: "География (рус.яз.)",
+            Data.KAZAKH: "География (о. т.)"
         },
         Data.GEOGRAPHY_KAZ: {
-            "Русский": "География (каз. яз.)",
-            "Қазақ": "География (қаз. т.)"
+            Data.RUSSIAN: "География (каз. яз.)",
+            Data.KAZAKH: "География (қаз. т.)"
         },
         Data.RUSSIAN_LANGUAGE: {
-            "Русский": "Руссский язык",
-            "Қазақ": "Орыс тілі"
+            Data.RUSSIAN: "Руссский язык",
+            Data.KAZAKH: "Орыс тілі"
         },
         Data.KAZAKH_LANGUAGE: {
-            "Русский": "Казахский язык",
-            "Қазақ": "Қазақ тілі"
+            Data.RUSSIAN: "Казахский язык",
+            Data.KAZAKH: "Қазақ тілі"
         },
         Data.IN_MAIN_MENU_MESSAGE: {
-            "Русский": "Выберите сервис",
-            "Қазақ": "Сервис танданыз"
+            Data.RUSSIAN: "Выберите сервис",
+            Data.KAZAKH: "Сервис танданыз"
         },
         Data.PAYMENT_BUTTON: {
-            "Русский": "Платежи",
-            "Қазақ": "Толемдер"
+            Data.RUSSIAN: "Платежи",
+            Data.KAZAKH: "Толемдер"
         },
         Data.SYNOPSES_BUTTON: {
-            "Русский": "Конспекты",
-            "Қазақ": "Конспектер"
+            Data.RUSSIAN: "Конспекты",
+            Data.KAZAKH: "Конспектер"
         },
         Data.STUDENT_STATS_BUTTON: {
-            "Русский": "Статистика",
-            "Қазақ": "Статистика"
+            Data.RUSSIAN: "Статистика",
+            Data.KAZAKH: "Статистика"
         },
         Data.ADD_TEACHER_BUTTON: {
-            "Русский": "Добавиться к учителю",
-            "Қазақ": "Ұстазға қосылу"
+            Data.RUSSIAN: "Добавиться к учителю",
+            Data.KAZAKH: "Ұстазға қосылу"
         },
         Data.START_QUIZ_BUTTON: {
-            "Русский": "Начать тест",
-            "Қазақ": "Тест бастау"
+            Data.RUSSIAN: "Начать тест",
+            Data.KAZAKH: "Тест бастау"
         },
         Data.SET_USER_STATE_MESSAGE: {
-            "Русский": "Выберите режим",
-            "Қазақ": "Режимінізді таңданыз"
+            Data.RUSSIAN: "Выберите режим",
+            Data.KAZAKH: "Режимінізді таңданыз"
         },
         Data.TUTOR: {
-            "Русский": "Репититор",
-            "Қазақ": "Репититор"
+            Data.RUSSIAN: "Репититор",
+            Data.KAZAKH: "Репититор"
         },
         Data.STUDENT: {
-            "Русский": "Ученик",
-            "Қазақ": "Оқушы"
+            Data.RUSSIAN: "Ученик",
+            Data.KAZAKH: "Оқушы"
         },
         Data.TEACHER: {
-            "Русский": "Учитель",
-            "Қазақ": "Ұстаз"
-        },
-        Data.USER_STATE_BUTTONS: {
-            "Русский": ["Учитель", "Ученик", "Репититор"],
-            "Қазақ": ["Ұстаз", "Оқушы", "Репититор"]
+            Data.RUSSIAN: "Учитель",
+            Data.KAZAKH: "Ұстаз"
         },
         Data.NEW_USERS_WELCOME_MESSAGE: {
-            "Русский": "Здравствуйте\nДля смены режима(Учитель, Ученик, Репититор) используйте команду /user_state\n"
-                       "Для выбора языка используйте команду /language\n",
-            "Қазақ": "Саламатсызба\nРежимінізді(Ұстаз, Оқушы, Репититор) өзгерту ушін /user_state "
-                     "командасын колданыныз\nТіл таңдау үшін /language командасын колданыныз\n"
+            Data.RUSSIAN: "Здравствуйте, для настройки профиля и выбора языка используйте команду /profile",
+            Data.KAZAKH: "Саламатсызба, профиль орнату немесе тіл тандау үшін /profile командасын қолданыныз\n"
         },
         Data.WELCOME_MESSAGE: {
-            "Русский": "Здравствуйте, пройдите в главное меню",
-            "Қазақ": "Саламатсызба, басты менюге өтініз"
-        },
-        Data.SET_LANGUAGE_BUTTON: {
-            "Русский": "Русский",
-            "Қазақ": "Қазақ"
+            Data.RUSSIAN: "Здравствуйте, пройдите в главное меню",
+            Data.KAZAKH: "Саламатсызба, басты менюге өтініз"
         },
         Data.MAIN_MENU_BUTTON: {
-            "Русский": "Главное меню",
-            "Қазақ": "Басты меню"
+            Data.RUSSIAN: "Главное меню",
+            Data.KAZAKH: "Басты меню"
         },
         Data.MAIN_MENU_MESSAGE: {
-            "Русский": "Чтобы пройти в главное меню нажмите кнопку",
-            "Қазақ": "Басты менюге өту үшін батырманы басыныз"
+            Data.RUSSIAN: "Чтобы пройти в главное меню нажмите кнопку",
+            Data.KAZAKH: "Басты менюге өту үшін батырманы басыныз"
         },
         Data.NOT_REGISTERED_MESSAGE: {
-            "Русский": "Чтобы запустить бота используйте команду /start",
-            "Қазақ": "Ботты косу ушін /start командасын қолданыныз"
+            Data.RUSSIAN: "Чтобы запустить бота используйте команду /start",
+            Data.KAZAKH: "Ботты косу ушін /start командасын қолданыныз"
         },
         Data.SET_LANGUAGE_MESSAGE: {
-            "Русский": "Выберите язык",
-            "Қазақ": "Тіл таңданыз"
+            Data.RUSSIAN: "Выберите язык",
+            Data.KAZAKH: "Тіл таңданыз"
         }
     }
 

@@ -11,3 +11,11 @@ def calc_results(results):
 
 class ReferralStates(StatesGroup):
     REFERRAL_STATE_0 = State()
+
+
+class UserNameStates(StatesGroup):
+    USER_NAME_STATE_0 = State()
+
+
+class TeacherStatStates(StatesGroup):
+    TEACHER_STAT_STATE_0 = State()
