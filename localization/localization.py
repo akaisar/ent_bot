@@ -64,6 +64,7 @@ class Data(Enum):
     TEACHER_DELETE_STUDENT_SUCCESS_MESSAGE = 60
     TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE = 61
     MATH_RUS = 62
+    PHYS_RUS = 63
 
 
 class Localization:
@@ -77,10 +78,14 @@ class Localization:
     subjects = [Data.KAZ_HISTORY_KAZ, Data.KAZ_HISTORY_RUS, Data.KAZAKH_LANGUAGE, Data.RUSSIAN_LANGUAGE,
                 Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_KAZ, Data.BIOLOGY_RUS, Data.ENGLISH_KAZ,
                 Data.ENGLISH_RUS, Data.WORLD_HISTORY_KAZ, Data.WORLD_HISTORY_RUS, Data.LITERATURE_KAZ,
-                Data.LITERATURE_RUS, Data.MATH_RUS]
-    image_subjects = [Data.MATH_RUS]
+                Data.LITERATURE_RUS, Data.MATH_RUS, Data.PHYS_RUS]
+    image_subjects = [Data.MATH_RUS, Data.PHYS_RUS]
     profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.MAIN_MENU_BUTTON]
     data = {
+        Data.PHYS_RUS: {
+            Data.RUSSIAN: "Физика (рус. яз.) (demo)",
+            Data.KAZAKH: "Физика (о. т.) (demo)"
+        },
         Data.MATH_RUS: {
             Data.RUSSIAN: "Математика (рус. яз.) (demo)",
             Data.KAZAKH: "Математика (о. т.) (demo)"
