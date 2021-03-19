@@ -14,8 +14,10 @@ class Config:
     USER_STATE = ["Teacher", "Student", "Tutor"]
     SUBJECT_NAMES = ["Қазақ тілі", "Русский язык all", "География ru", "География kz", "Ағылшын тілі ru",
                      "Ағылшын тілі kz", "Қазақстан тарихы kz", "Қазақстан тарихы ru", "Биология ru",
-                     "Биология kz", "Дүние жүзі тарихы ru", "Дүние жүзі тарихы kz", "Әдебиет ru", "Әдебиет kz"]
+                     "Биология kz", "Дүние жүзі тарихы ru", "Дүние жүзі тарихы kz", "Әдебиет ru", "Әдебиет kz",
+                     "Математика ru"]
     DATA_SUBJECT_NAME = {
+        Data.MATH_RUS: "Математика ru",
         Data.KAZAKH_LANGUAGE: "Қазақ тілі",
         Data.RUSSIAN_LANGUAGE: "Русский язык all",
         Data.BIOLOGY_RUS: "Биология ru",
@@ -32,6 +34,7 @@ class Config:
         Data.LITERATURE_RUS: "Әдебиет ru"
     }
     SUBJECT_NAME_DATA = {
+        "Математика ru": Data.MATH_RUS,
         "Қазақ тілі": Data.KAZAKH_LANGUAGE,
         "Русский язык all": Data.RUSSIAN_LANGUAGE,
         "География ru": Data.GEOGRAPHY_RUS,

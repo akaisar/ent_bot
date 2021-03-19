@@ -14,8 +14,27 @@ def json_to_obj(json_obj):
         question=json_obj["question"],
         options=json_obj["options"].split("$"),
         correct_option_id=json_obj["correct_option_id"],
-        owner_id=json_obj["owner"]
     )
+
+
+# MARK: File interaction
+
+def get_image_quizzes_from_file():
+    with open("data/quiz_image.txt", "r") as f:
+        data = f.read()
+    data = json.loads(data)
+    quizzes = {}
+    quiz_topic = {}
+    for json_obj in data:
+        topic = Config.SUBJECT_NAME_DATA[json_obj["topic"]]
+        quiz_id = json_obj["quiz_id"]
+        if topic not in quizzes:
+            quizzes[topic] = {}
+        quizzes[topic][quiz_id] = json_to_obj(json_obj=json_obj)
+        quiz_topic[quiz_id] = topic
+    logging.info("Finish load quizzes from api")
+    return quizzes, quiz_topic
+
 
 # MARK: API interaction
 

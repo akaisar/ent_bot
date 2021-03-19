@@ -15,7 +15,7 @@ class Session:
 class Quiz:
     type: str = "question"
 
-    def __init__(self, topic, quiz_id, question, options, correct_option_id, owner_id):
+    def __init__(self, topic, quiz_id, question, options, correct_option_id):
         # Используем подсказки типов, чтобы было проще ориентироваться.
         self.topic: str = topic
         self.quiz_id: str = quiz_id  # ID викторины. Изменится после отправки от имени бота

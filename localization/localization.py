@@ -63,9 +63,11 @@ class Data(Enum):
     ANSWER_BELOW = 59
     TEACHER_DELETE_STUDENT_SUCCESS_MESSAGE = 60
     TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE = 61
+    MATH_RUS = 62
 
 
 class Localization:
+    options = ["A)", "B)", "C)", "D)", "E)", "F)", "G)", "H)"]
     languages = [Data.KAZAKH, Data.RUSSIAN]
     student_main_menu_buttons = [Data.START_QUIZ_BUTTON, Data.ADD_TEACHER_BUTTON, Data.STUDENT_STATS_BUTTON,
                                  Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON, Data.PROFILE_BUTTON]
@@ -75,9 +77,14 @@ class Localization:
     subjects = [Data.KAZ_HISTORY_KAZ, Data.KAZ_HISTORY_RUS, Data.KAZAKH_LANGUAGE, Data.RUSSIAN_LANGUAGE,
                 Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_KAZ, Data.BIOLOGY_RUS, Data.ENGLISH_KAZ,
                 Data.ENGLISH_RUS, Data.WORLD_HISTORY_KAZ, Data.WORLD_HISTORY_RUS, Data.LITERATURE_KAZ,
-                Data.LITERATURE_RUS]
+                Data.LITERATURE_RUS, Data.MATH_RUS]
+    image_subjects = [Data.MATH_RUS]
     profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.MAIN_MENU_BUTTON]
     data = {
+        Data.MATH_RUS: {
+            Data.RUSSIAN: "Математика (рус. яз.) (demo)",
+            Data.KAZAKH: "Математика (о. т.) (demo)"
+        },
         Data.TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE: {
             Data.RUSSIAN: "Вы ввели не верные данные попробуйте снова",
             Data.KAZAKH: "Сіз қате деректерді енгіздіңіз қайталап көріңіз"

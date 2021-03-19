@@ -18,7 +18,7 @@ from utils import calc_results, ReferralStates, UserNameStates, TeacherStatState
 logging.basicConfig(level=logging.INFO)
 
 # bot initialization
-bot = Bot(token=Config.TOKEN)
+bot = Bot(token=Config.TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
@@ -67,18 +67,32 @@ async def send_student_stats(message, telegram_id, stats, language, index=None):
 
 # MARK: Send quiz
 
+
 async def send_quiz(quiz, telegram_id):
-    options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
-                                                        correct_option_id=quiz.correct_option_id)
-    if len(quiz.question) <= 300:
-        msg = await bot.send_poll(chat_id=telegram_id, question=quiz.question,
+    quiz_number = len(user_s.quiz_results[telegram_id])+1
+    if quiz.topic in local.image_subjects:
+        with open(f"data/images/{quiz.question}.png", 'rb') as f:
+            photo = f
+            await bot.send_photo(chat_id=telegram_id, photo=photo)
+        options = local.options[:int(quiz.options[0])]
+        correct_option_id = quiz.correct_option_id
+        msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]",
                                   is_anonymous=False, options=options, type="quiz",
-                                  correct_option_id=correct_option_id)
+                                  correct_option_id=correct_option_id, explanation_parse_mode='HTML')
+    elif len(quiz.question) <= 300:
+        options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
+                                                            correct_option_id=quiz.correct_option_id)
+        msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question,
+                                  is_anonymous=False, options=options, type="quiz",
+                                  correct_option_id=correct_option_id, explanation_parse_mode='HTML')
     else:
-        await bot.send_message(chat_id=telegram_id, text=quiz.question)
-        msg = await bot.send_poll(chat_id=telegram_id, question="()",
+        options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
+                                                            correct_option_id=quiz.correct_option_id,)
+        await bot.send_message(chat_id=telegram_id, text=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question)
+        msg = await bot.send_poll(chat_id=telegram_id, question=" ",
                                   is_anonymous=False, options=options, type="quiz",
-                                  correct_option_id=correct_option_id)
+                                  correct_option_id=correct_option_id,
+                                  explanation_parse_mode='HTML')
     sleep(time_between_questions)
     quiz_s.set_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
