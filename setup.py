@@ -542,7 +542,7 @@ async def default_response(message: types.Message):
 
 def main():
     user_s.get_users()
-    await quiz_s.load_quizzes()
+    quiz_s.load_quizzes()
     subject_s.load_subjects()
     executor.start_polling(dp, skip_updates=True)
 
