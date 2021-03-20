@@ -4,16 +4,17 @@
 # dependencies
 import logging
 import re
+import asyncio
 from time import sleep
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
-from services import quiz_service, user_service, session_service
+from services import quiz_service, user_service, session_service, subject_service
 from config import Config
 from localization.localization import Localization, Data
-from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates
+from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates, SynopsesStates
 
 logging.basicConfig(level=logging.INFO)
 
@@ -24,6 +25,7 @@ dp.middleware.setup(LoggingMiddleware())
 user_s = user_service.UserService()
 quiz_s = quiz_service.QuizService()
 session_s = session_service.SessionService()
+subject_s = subject_service.SubjectService()
 local = Localization()
 quizzes_number = 20
 time_between_questions = 0.75
@@ -96,6 +98,16 @@ async def send_quiz(quiz, telegram_id):
     sleep(time_between_questions)
     quiz_s.set_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
+
+
+def get_poll_keyboard(buttons):
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    for index in range(0, len(buttons), 2):
+        if index != len(buttons) - 1:
+            poll_keyboard.row(buttons[index], buttons[index+1])
+        else:
+            poll_keyboard.add(buttons[index])
+    return poll_keyboard
 
 
 # MARK: Send message and buttons
@@ -265,12 +277,57 @@ async def student_main_menu(message: types.Message):
                                    state=Data.IN_MAIN_MENU_MESSAGE)
 
 
+# MARK: Student synopses return to main menu
+
+@dp.message_handler(lambda message: local.check_text([Data.MAIN_MENU_BUTTON], message.text)[0],
+                    state=SynopsesStates.SYNOPSES_STATE_0)
+async def student_synopses_return_to_main_menu(message: types.Message, state: FSMContext):
+    await state.finish()
+    await send_message_and_buttons(message=message, buttons=local.student_main_menu_buttons,
+                                   state=Data.IN_MAIN_MENU_MESSAGE)
+
+
+# MARK: Student synopses subtopic text
+@dp.message_handler(lambda message: subject_s.is_subtopic_name(message.text) and user_s.is_student(telegram_id=
+                                                                                                   message.from_user.id))
+async def student_synopses_subtopic_text(message: types.Message):
+    telegram_id = message.from_user.id
+    text = subject_s.get_subtopic_text(message.text)
+    print(text)
+    await bot.send_message(chat_id=telegram_id, text=text)
+    await send_message_and_buttons(message=message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.MAIN_MENU_MESSAGE)
+
+
+# MARK: Student synopses choose subject
+
+@dp.message_handler(lambda message: local.check_text(local.synopses_subjects, message.text)[0],
+                    state=SynopsesStates.SYNOPSES_STATE_0)
+async def student_synopses_choose_subject(message: types.Message, state: FSMContext):
+    telegram_id = message.from_user.id
+    language = user_s.get_language(telegram_id)
+    await state.finish()
+    subtopics = subject_s.get_subject_topics(topic_name=local.check_text(local.synopses_subjects, message.text)[1])
+    poll_keyboard = get_poll_keyboard(subtopics)
+    poll_keyboard.add(local.data[Data.MAIN_MENU_BUTTON][language])
+    await message.answer(local.data[Data.CHOOSE_SUBTOPIC_MESSAGE][language], reply_markup=poll_keyboard)
+
+
+
+# MARK: Student synopses state
+
+@dp.message_handler(lambda message: local.check_text([Data.SYNOPSES_BUTTON], message.text)[0] and
+                                    user_s.is_student(telegram_id=message.from_user.id))
+async def student_synopses(message: types.Message, state: FSMContext):
+    await state.set_state(SynopsesStates.SYNOPSES_STATE_0)
+    await send_message_and_buttons(message=message, buttons=local.synopses_subjects, state=Data.CHOOSE_TOPIC_MESSAGE)
+
+
 # MARK: Choose quiz topic state
 
 @dp.message_handler(lambda message: local.check_text([Data.START_QUIZ_BUTTON], message.text)[0] and
                                     user_s.is_student(telegram_id=message.from_user.id))
 async def choose_quiz_topic(message: types.Message):
-    await send_message_and_buttons(message=message, buttons=local.subjects, state=Data.CHOOSE_QUIZ_TOPIC_MESSAGE)
+    await send_message_and_buttons(message=message, buttons=local.subjects, state=Data.CHOOSE_TOPIC_MESSAGE)
 
 
 # MARK: Start new session
@@ -483,7 +540,12 @@ async def default_response(message: types.Message):
     await message.answer(local.data[Data.MAIN_MENU_MESSAGE][language], reply_markup=poll_keyboard)
 
 
-if __name__ == "__main__":
+def main():
     user_s.get_users()
-    quiz_s.load_quizzes()
+    # await quiz_s.load_quizzes()
+    subject_s.load_subjects()
     executor.start_polling(dp, skip_updates=True)
+
+
+if __name__ == "__main__":
+    main()

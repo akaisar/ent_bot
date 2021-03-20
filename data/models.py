@@ -12,6 +12,20 @@ class Session:
         self.results = results
 
 
+class Subtopic:
+    def __init__(self, topic_id, topic_name, text):
+        self.topic_id = topic_id,
+        self.topic_name = topic_name,
+        self.text = text
+
+
+class Subject:
+    def __init__(self, topic_name, subtopics):
+        self.topic_name = topic_name,
+        self.subtopics = subtopics
+
+
+
 class Quiz:
     type: str = "question"
 

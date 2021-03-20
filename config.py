@@ -11,6 +11,8 @@ class Config:
     STUDENTS = "students"
     TUTORS = "tutors"
     USER_DB = [USERS, TEACHERS, STUDENTS]
+    SUBJECTS_DB = "subjects"
+    SUBTOPIC_DB = "subtopic"
     USER_STATE = ["Teacher", "Student", "Tutor"]
     SUBJECT_NAMES = ["Қазақ тілі", "Русский язык all", "География ru", "География kz", "Ағылшын тілі ru",
                      "Ағылшын тілі kz", "Қазақстан тарихы kz", "Қазақстан тарихы ru", "Биология ru",

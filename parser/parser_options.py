@@ -25,23 +25,25 @@ transform_option = {
     "В": 1,
     "Д": 3,
 }
-output = []
-options = [1, 3, 3, 4, 0, 1, 4, 4, 3, 0, 1, 2, 3, 1, 2, 1, 1, 1, 3, 3]
-options2 = [2, 2, 4, 1, 0, 1, 4, 3, 0, 0, 0, 1, 0, 4, 2, 1, 4, 1, 3, 1]
-
-for index in range(len(options)):
-    op = options[index]
-    question = {
-        "topic": "Математика rus",
-        "question": f"8104_Математика rus_{index+1}",
-        "options": "5",
-        "correct_option_id": op,
-        "owner": 0,
-        "winners": "1",
-        "message_id": 1,
-    }
-    r = requests.post(Config.API_URL + Config.QUIZ_DB, json=question)
-    print(r.text)
+data = requests.get(Config.API_URL+Config.SUBTOPIC_DB+'/2')
+print(data.text)
+# output = []
+# options = [1, 3, 3, 4, 0, 1, 4, 4, 3, 0, 1, 2, 3, 1, 2, 1, 1, 1, 3, 3]
+# options2 = [2, 2, 4, 1, 0, 1, 4, 3, 0, 0, 0, 1, 0, 4, 2, 1, 4, 1, 3, 1]
+#
+# for index in range(len(options)):
+#     op = options[index]
+#     question = {
+#         "topic": "Математика rus",
+#         "question": f"8104_Математика rus_{index+1}",
+#         "options": "5",
+#         "correct_option_id": op,
+#         "owner": 0,
+#         "winners": "1",
+#         "message_id": 1,
+#     }
+#     r = requests.post(Config.API_URL + Config.QUIZ_DB, json=question)
+#     print(r.text)
 # with open("local_db_3.txt", "r") as f:
 #     data = f.read()
 #     data = json.loads(data)

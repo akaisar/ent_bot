@@ -30,7 +30,7 @@ class Data(Enum):
     GEOGRAPHY_KAZ = 25
     BIOLOGY_RUS = 26
     BIOLOGY_KAZ = 27
-    CHOOSE_QUIZ_TOPIC_MESSAGE = 28
+    CHOOSE_TOPIC_MESSAGE = 28
     CANCEL_BUTTON = 29
     START_SESSION_MESSAGE = 30
     RESULTS_MESSAGE = 31
@@ -65,6 +65,7 @@ class Data(Enum):
     TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE = 61
     MATH_RUS = 62
     PHYS_RUS = 63
+    CHOOSE_SUBTOPIC_MESSAGE = 64
 
 
 class Localization:
@@ -81,7 +82,12 @@ class Localization:
                 Data.LITERATURE_RUS, Data.MATH_RUS, Data.PHYS_RUS]
     image_subjects = [Data.MATH_RUS, Data.PHYS_RUS]
     profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.MAIN_MENU_BUTTON]
+    synopses_subjects = [Data.KAZ_HISTORY_KAZ, Data.MAIN_MENU_BUTTON]
     data = {
+        Data.CHOOSE_SUBTOPIC_MESSAGE: {
+            Data.RUSSIAN: "Выберите тему",
+            Data.KAZAKH: "Теманы таңданыз"
+        },
         Data.PHYS_RUS: {
             Data.RUSSIAN: "Физика (рус. яз.) (demo)",
             Data.KAZAKH: "Физика (о. т.) (demo)"
@@ -192,7 +198,7 @@ class Localization:
         },
         Data.TEACHER_PAYMENT_MESSAGE: {
             Data.RUSSIAN: "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
-            Data.KAZAKH: "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
+            Data.KAZAKH: "Әзірлеушілерді қолдау:\n+77082953401\n+77088948540\n"
         },
         Data.TEACHER_STATS_BUTTON: {
             Data.RUSSIAN: "Статистика учеников",
@@ -200,7 +206,7 @@ class Localization:
         },
         Data.STUDENT_PAYMENT_MESSAGE: {
             Data.RUSSIAN: "Поддержать разработчиков:\n+77082953401\n+77088948540\n",
-            Data.KAZAKH: "Әзірлеушілерді қолдау:\n+7082953401\n+77088948540\n"
+            Data.KAZAKH: "Әзірлеушілерді қолдау:\n+77082953401\n+77088948540\n"
         },
         Data.TEACHER_ADD_UN_SUCCESS_MESSAGE: {
             Data.RUSSIAN: "Учителя с таким кодом не существует\nПопробуйте заново",
@@ -226,7 +232,7 @@ class Localization:
             Data.RUSSIAN: "Предмет: {}, Общее количество вопросов: {}",
             Data.KAZAKH: "Сабақ: {}, Сұрақ жалпы саны: {}"
         },
-        Data.CHOOSE_QUIZ_TOPIC_MESSAGE: {
+        Data.CHOOSE_TOPIC_MESSAGE: {
             Data.RUSSIAN: "Выберите предмет",
             Data.KAZAKH: "Сабақты таңданыз"
         },

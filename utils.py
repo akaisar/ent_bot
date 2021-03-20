@@ -19,3 +19,7 @@ class UserNameStates(StatesGroup):
 
 class TeacherStatStates(StatesGroup):
     TEACHER_STAT_STATE_0 = State()
+
+
+class SynopsesStates(StatesGroup):
+    SYNOPSES_STATE_0 = State()
