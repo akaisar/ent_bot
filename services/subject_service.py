@@ -2,6 +2,7 @@ import requests
 import json
 from localization.localization import Data
 from config import Config
+import logging
 from data.models import Subject, Subtopic
 
 
@@ -42,7 +43,9 @@ class SubjectService:
     subtopics = {}
 
     def load_subjects(self):
+        logging.info("start load synopses")
         self.subjects, self.subtopics = get_subjects_from_api()
+        logging.info("finish load synopses")
 
     def get_subject_topics(self, topic_name):
         topic_names = []
