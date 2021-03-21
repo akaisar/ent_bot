@@ -27,7 +27,7 @@ def json_to_obj(json_obj, user_type):
 # MARK: API interaction
 
 
-async def get_users_from_api():
+def get_users_from_api():
     logging.info("Start load users from api")
     users = {}
     for user_type in Config.USER_DB:
@@ -92,8 +92,8 @@ class UserService:
             return True
         return False
 
-    async def get_users(self):
-        self.users = await get_users_from_api()
+    def get_users(self):
+        self.users = get_users_from_api()
 
     def user_exists(self, telegram_id):
         return telegram_id in self.users[Config.USERS]

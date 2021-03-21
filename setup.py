@@ -555,11 +555,7 @@ async def default_response(message: types.Message):
 
 
 async def on_startup(dp):
-    logging.info(Config.WEBAPP_PORT)
     await bot.set_webhook(Config.WEBHOOK_URL, drop_pending_updates=True)
-    await user_s.get_users()
-    # await quiz_s.load_quizzes()
-    # await subject_s.load_subjects()
     logging.warning(
         'Starting connection. ')
 
@@ -574,6 +570,9 @@ def main():
         host=Config.WEBAPP_HOST,
         port=Config.WEBAPP_PORT,
     )
+    user_s.get_users()
+    quiz_s.load_quizzes()
+    subject_s.load_subjects()
 
 # if __name__ == "__main__":
 #     main()

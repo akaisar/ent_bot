@@ -41,8 +41,8 @@ class SubjectService:
     subjects = {}
     subtopics = {}
 
-    async def load_subjects(self):
-        self.subjects, self.subtopics = await get_subjects_from_api()
+    def load_subjects(self):
+        self.subjects, self.subtopics = get_subjects_from_api()
 
     def get_subject_topics(self, topic_name):
         topic_names = []

@@ -40,7 +40,7 @@ def get_image_quizzes_from_file():
 # MARK: API interaction
 
 
-async def get_quizzes_from_api():
+def get_quizzes_from_api():
     logging.info("Start load quizzes from api")
     r = requests.get(Config.API_URL+Config.QUIZ_DB)
     data = json.loads(r.text)
@@ -70,8 +70,8 @@ class QuizService:
 
     # MARK: Load quizzes to cash
 
-    async def load_quizzes(self):
-        self.quizzes, self.quiz_topic = await get_quizzes_from_api()
+    def load_quizzes(self):
+        self.quizzes, self.quiz_topic = get_quizzes_from_api()
 
     # MARK: Post quiz to api
 
