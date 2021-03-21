@@ -555,15 +555,15 @@ async def default_response(message: types.Message):
 
 
 async def on_startup(dp):
+    user_s.get_users()
+    quiz_s.load_quizzes()
+    subject_s.load_subjects()
     logging.warning(
         'Starting connection. ')
     await bot.set_webhook(Config.WEBHOOK_URL, drop_pending_updates=True)
 
 
 def main():
-    user_s.get_users()
-    quiz_s.load_quizzes()
-    subject_s.load_subjects()
     # executor.start_polling(dp, skip_updates=True)
     start_webhook(
         dispatcher=dp,
