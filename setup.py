@@ -555,6 +555,7 @@ async def default_response(message: types.Message):
 
 
 async def on_startup(dp):
+    logging.info(Config.WEBAPP_PORT)
     await bot.set_webhook(Config.WEBHOOK_URL, drop_pending_updates=True)
     await user_s.get_users()
     await quiz_s.load_quizzes()
