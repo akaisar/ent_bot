@@ -4,6 +4,7 @@
 # dependencies
 import logging
 import re
+import threading
 import asyncio
 from time import sleep
 
@@ -16,6 +17,7 @@ from services import quiz_service, user_service, session_service, subject_servic
 from config import Config
 from localization.localization import Localization, Data
 from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates, SynopsesStates
+
 
 logging.basicConfig(level=logging.INFO)
 # bot initialization
@@ -554,6 +556,12 @@ async def default_response(message: types.Message):
     await message.answer(local.data[Data.MAIN_MENU_MESSAGE][language], reply_markup=poll_keyboard)
 
 
+def load_db():
+    user_s.get_users()
+    quiz_s.load_quizzes()
+    subject_s.load_subjects()
+
+
 async def on_startup(dp):
     await bot.set_webhook(Config.WEBHOOK_URL, drop_pending_updates=True)
     logging.warning(
@@ -561,6 +569,8 @@ async def on_startup(dp):
 
 
 def main():
+    x = threading.Thread(target=load_db)
+    x.start()
     # executor.start_polling(dp, skip_updates=True)
     start_webhook(
         dispatcher=dp,
@@ -570,9 +580,7 @@ def main():
         host=Config.WEBAPP_HOST,
         port=Config.WEBAPP_PORT,
     )
-    user_s.get_users()
-    quiz_s.load_quizzes()
-    subject_s.load_subjects()
+
 
 # if __name__ == "__main__":
 #     main()
