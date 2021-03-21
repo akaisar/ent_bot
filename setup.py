@@ -558,7 +558,7 @@ async def on_startup(dp):
     logging.info(Config.WEBAPP_PORT)
     await bot.set_webhook(Config.WEBHOOK_URL, drop_pending_updates=True)
     await user_s.get_users()
-    await quiz_s.load_quizzes()
+    # await quiz_s.load_quizzes()
     # await subject_s.load_subjects()
     logging.warning(
         'Starting connection. ')
