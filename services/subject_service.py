@@ -20,7 +20,7 @@ def subtopic_json_to_obj(json_obj):
     )
 
 
-def get_subjects_from_api():
+async def get_subjects_from_api():
     data = json.loads(requests.get(Config.API_URL+Config.SUBJECTS_DB).text)
     subjects = {}
     for json_subject in data:
@@ -41,10 +41,8 @@ class SubjectService:
     subjects = {}
     subtopics = {}
 
-    def load_subjects(self):
-        self.subjects, self.subtopics = get_subjects_from_api()
-        print(self.subjects)
-        print(self.subtopics)
+    async def load_subjects(self):
+        self.subjects, self.subtopics = await get_subjects_from_api()
 
     def get_subject_topics(self, topic_name):
         topic_names = []
