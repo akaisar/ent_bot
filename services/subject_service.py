@@ -21,7 +21,7 @@ def subtopic_json_to_obj(json_obj):
     )
 
 
-async def get_subjects_from_api():
+def get_subjects_from_api():
     data = json.loads(requests.get(Config.API_URL+Config.SUBJECTS_DB).text)
     subjects = {}
     for json_subject in data:
