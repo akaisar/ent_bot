@@ -18,3 +18,7 @@ def set_hook():
 def start():
     from setup import main
     main()
+
+
+if __name__ == "__main__":
+    start()

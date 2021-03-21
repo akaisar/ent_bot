@@ -10,3 +10,4 @@ RUN pip install -r /app/requirements.txt
 COPY . /app
 # заупскаем наше приложение
 #CMD python /app/setup.py
+CMD python /app/do.py
