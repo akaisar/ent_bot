@@ -14,6 +14,7 @@ def json_to_obj(json_obj):
         question=json_obj["question"],
         options=json_obj["options"].split("$"),
         correct_option_id=json_obj["correct_option_id"],
+        is_image=False
     )
 
 
@@ -70,7 +71,7 @@ class QuizService:
     # MARK: Load quizzes to cash
 
     def load_quizzes(self):
-        self.quizzes, self.quiz_topic = get_quizzes_from_api()
+        self.quizzes, self.quiz_topic = get_image_quizzes_from_file()
 
     # MARK: Post quiz to api
 

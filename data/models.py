@@ -25,11 +25,10 @@ class Subject:
         self.subtopics = subtopics
 
 
-
 class Quiz:
     type: str = "question"
 
-    def __init__(self, topic, quiz_id, question, options, correct_option_id):
+    def __init__(self, topic, quiz_id, question, options, correct_option_id, is_image):
         # Используем подсказки типов, чтобы было проще ориентироваться.
         self.topic: str = topic
         self.quiz_id: str = quiz_id  # ID викторины. Изменится после отправки от имени бота
@@ -38,6 +37,7 @@ class Quiz:
         self.correct_option_id: int = correct_option_id  # ID правильного ответа
         self.owner: int = 0  # Владелец опроса
         self.message_id: int = 0  # Сообщение с викториной (для закрытия)
+        self.is_image: bool = is_image
 
     def to_json(self):
         return {

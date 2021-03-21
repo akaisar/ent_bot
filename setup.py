@@ -11,13 +11,13 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.executor import start_webhook
 from services import quiz_service, user_service, session_service, subject_service
 from config import Config
 from localization.localization import Localization, Data
 from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates, SynopsesStates
 
 logging.basicConfig(level=logging.INFO)
-
 # bot initialization
 bot = Bot(token=Config.TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -69,8 +69,7 @@ async def send_student_stats(message, telegram_id, stats, language, index=None):
 
 # MARK: Send quiz
 
-
-async def send_quiz(quiz, telegram_id):
+async def send_quiz(quiz, telegram_id, is_poll):
     quiz_number = len(user_s.quiz_results[telegram_id])+1
     if quiz.topic in local.image_subjects:
         with open(f"data/images/{quiz.question}.png", 'rb') as f:
@@ -78,23 +77,35 @@ async def send_quiz(quiz, telegram_id):
             await bot.send_photo(chat_id=telegram_id, photo=photo)
         options = local.options[:int(quiz.options[0])]
         correct_option_id = quiz.correct_option_id
-        msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]",
-                                  is_anonymous=False, options=options, type="quiz",
-                                  correct_option_id=correct_option_id, explanation_parse_mode='HTML')
+        if is_poll:
+            msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]",
+                                      is_anonymous=False, options=options)
+        else:
+            msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]",
+                                      is_anonymous=False, options=options, type="quiz",
+                                      correct_option_id=correct_option_id)
     elif len(quiz.question) <= 300:
         options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
                                                             correct_option_id=quiz.correct_option_id)
-        msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question,
-                                  is_anonymous=False, options=options, type="quiz",
-                                  correct_option_id=correct_option_id, explanation_parse_mode='HTML')
+        if is_poll:
+            msg = await bot.send_poll(chat_id=telegram_id,
+                                      question=f"[{quiz_number}:{quizzes_number}]\n" + quiz.question,
+                                      is_anonymous=False, options=options)
+        else:
+            msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question,
+                                      is_anonymous=False, options=options, type="quiz",
+                                      correct_option_id=correct_option_id)
     else:
         options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
                                                             correct_option_id=quiz.correct_option_id,)
         await bot.send_message(chat_id=telegram_id, text=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question)
-        msg = await bot.send_poll(chat_id=telegram_id, question=" ",
-                                  is_anonymous=False, options=options, type="quiz",
-                                  correct_option_id=correct_option_id,
-                                  explanation_parse_mode='HTML')
+        if is_poll:
+            msg = await bot.send_poll(chat_id=telegram_id, question=" ",
+                                      is_anonymous=False, options=options)
+        else:
+            msg = await bot.send_poll(chat_id=telegram_id, question=" ",
+                                      is_anonymous=False, options=options, type="quiz",
+                                      correct_option_id=correct_option_id)
     sleep(time_between_questions)
     quiz_s.set_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
@@ -344,7 +355,7 @@ async def start_new_session(message: types.Message):
     await send_message_and_buttons(message=message, buttons=[Data.CANCEL_BUTTON],
                                    state=Data.START_SESSION_MESSAGE, args=[message.text, quizzes_number])
     await send_quiz(telegram_id=telegram_id, quiz=quiz_s.get_quiz_from_id(
-        quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)))
+        quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)), is_poll=False)
 
 
 # MARK: Cancel session
@@ -418,6 +429,8 @@ async def student_stats(message: types.Message):
 @dp.poll_answer_handler()
 async def handle_poll_answer(quiz_answer: types.PollAnswer):
     telegram_id = quiz_answer.user.id
+    if not session_s.have_active_session(telegram_id):
+        return
     quiz_id = quiz_answer.poll_id
     is_quiz_end = user_s.user_make_answer_for_quiz(telegram_id=telegram_id,
                                                    is_option_correct=quiz_s.is_option_correct(
@@ -431,7 +444,8 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                        args=calc_results(results=results))
     else:
         await send_quiz(telegram_id=telegram_id,
-                        quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=telegram_id)))
+                        quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=telegram_id)),
+                        is_poll=False)
 
 
 # MARK: Teacher Menu
@@ -540,12 +554,25 @@ async def default_response(message: types.Message):
     await message.answer(local.data[Data.MAIN_MENU_MESSAGE][language], reply_markup=poll_keyboard)
 
 
+async def on_startup(dp):
+    logging.warning(
+        'Starting connection. ')
+    await bot.set_webhook(Config.WEBHOOK_URL, drop_pending_updates=True)
+
+
 def main():
     user_s.get_users()
     quiz_s.load_quizzes()
     subject_s.load_subjects()
-    executor.start_polling(dp, skip_updates=True)
+    # executor.start_polling(dp, skip_updates=True)
+    start_webhook(
+        dispatcher=dp,
+        webhook_path=Config.WEBHOOK_PATH,
+        skip_updates=True,
+        on_startup=on_startup,
+        host=Config.WEBAPP_HOST,
+        port=Config.WEBAPP_PORT,
+    )
 
-
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

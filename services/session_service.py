@@ -29,3 +29,7 @@ class SessionService:
     def post_session(self, telegram_id, results):
         self.sessions[telegram_id].results = results
         post_session(session=self.sessions[telegram_id])
+        self.sessions.pop(telegram_id)
+
+    def have_active_session(self, telegram_id):
+        return telegram_id in self.sessions

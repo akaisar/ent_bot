@@ -6,6 +6,12 @@ from localization.localization import Data
 class Config:
     API_URL = 'http://aldie1741.pythonanywhere.com/'
     TOKEN = os.getenv('API_BOT_TOKEN')
+    HEROKU_APP_NAME = os.getenv('HEROKU_APP_NAME')
+    WEBHOOK_HOST = f'https://{HEROKU_APP_NAME}.herokuapp.com'
+    WEBHOOK_PATH = f'/webhook/{TOKEN}'
+    WEBHOOK_URL = f'{WEBHOOK_HOST}{WEBHOOK_PATH}'
+    WEBAPP_HOST = '0.0.0.0'
+    WEBAPP_PORT = int(os.getenv('PORT'))
     USERS = "users"
     TEACHERS = "teachers"
     STUDENTS = "students"
@@ -46,7 +52,7 @@ class Config:
         "Ағылшын тілі ru": Data.ENGLISH_RUS,
         "Ағылшын тілі kz": Data.ENGLISH_KAZ,
         "Биология ru": Data.BIOLOGY_RUS,
-        "Биология kz": Data.ENGLISH_KAZ,
+        "Биология kz": Data.BIOLOGY_KAZ,
         "Қазақстан тарихы kz": Data.KAZ_HISTORY_KAZ,
         "Қазақстан тарихы ru": Data.KAZ_HISTORY_RUS,
         "Дүние жүзі тарихы kz": Data.WORLD_HISTORY_KAZ,
