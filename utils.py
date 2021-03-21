@@ -23,3 +23,7 @@ class TeacherStatStates(StatesGroup):
 
 class SynopsesStates(StatesGroup):
     SYNOPSES_STATE_0 = State()
+
+
+class SessionStates(StatesGroup):
+    SESSION_STATE_0 = State()

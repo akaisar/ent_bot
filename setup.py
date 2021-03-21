@@ -16,7 +16,7 @@ from aiogram.utils.executor import start_webhook
 from services import quiz_service, user_service, session_service, subject_service
 from config import Config
 from localization.localization import Localization, Data
-from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates, SynopsesStates
+from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates, SynopsesStates, SessionStates
 
 
 logging.basicConfig(level=logging.INFO)
@@ -339,15 +339,17 @@ async def student_synopses(message: types.Message, state: FSMContext):
 
 @dp.message_handler(lambda message: local.check_text([Data.START_QUIZ_BUTTON], message.text)[0] and
                                     user_s.is_student(telegram_id=message.from_user.id))
-async def choose_quiz_topic(message: types.Message):
+async def choose_quiz_topic(message: types.Message, state: FSMContext):
+    await state.set_state(SessionStates.SESSION_STATE_0)
     await send_message_and_buttons(message=message, buttons=local.subjects, state=Data.CHOOSE_TOPIC_MESSAGE)
 
 
 # MARK: Start new session
 
 @dp.message_handler(lambda message: local.check_text(local.subjects, message.text)[0] and
-                                    user_s.is_student(telegram_id=message.from_user.id))
-async def start_new_session(message: types.Message):
+                    user_s.is_student(telegram_id=message.from_user.id), state=SessionStates.SESSION_STATE_0)
+async def start_new_session(message: types.Message, state:FSMContext):
+    await state.finish()
     telegram_id = message.from_user.id
     topic_name = local.check_text(local.subjects, message.text)[1]
     user_s.user_start_new_quiz(message.from_user.id)
