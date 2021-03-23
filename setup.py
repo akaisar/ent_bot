@@ -559,9 +559,11 @@ async def default_response(message: types.Message):
 
 
 def load_db():
-    user_s.get_users()
-    quiz_s.load_quizzes()
-    subject_s.load_subjects()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(user_s.get_users())
+    loop.run_until_complete(quiz_s.load_quizzes())
+    loop.run_until_complete(subject_s.load_subjects())
 
 
 async def on_startup(dp):

@@ -1,11 +1,11 @@
 from data.models import Session
 from config import Config
-import requests
+import requests_async as requests
 
 # MARK: Post session to API
 
 
-def post_session(session):
+async def post_session(session):
     if len(session.results) == 0:
         return
     json_session = {
@@ -14,7 +14,7 @@ def post_session(session):
         "quizzes": session.quiz_ids[:len(session.results)],
         "results": session.results
     }
-    r = requests.post(Config.API_URL+Config.SESSION_DB, json=json_session)
+    r = await requests.post(Config.API_URL+Config.SESSION_DB, json=json_session)
     print(json_session)
     print("session request ", r)
 

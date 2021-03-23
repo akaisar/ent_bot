@@ -1,4 +1,4 @@
-import requests
+import requests_async as requests
 import json
 from localization.localization import Data
 from config import Config
@@ -21,8 +21,8 @@ def subtopic_json_to_obj(json_obj):
     )
 
 
-def get_subjects_from_api():
-    data = json.loads(requests.get(Config.API_URL+Config.SUBJECTS_DB).text)
+async def get_subjects_from_api():
+    data = json.loads(await requests.get(Config.API_URL+Config.SUBJECTS_DB).text)
     subjects = {}
     for json_subject in data:
         subject = subject_json_to_obj(json_subject)
@@ -30,7 +30,7 @@ def get_subjects_from_api():
     subtopics = {}
     for topic_name, subject in subjects.items():
         for subtopic_id in subject.subtopics:
-            json_subtopic = json.loads(requests.get(
+            json_subtopic = json.loads(await requests.get(
                 Config.API_URL+Config.SUBTOPIC_DB+'/'+str(subtopic_id)).text)[0]
             subtopic = subtopic_json_to_obj(json_subtopic)
             subtopics[json_subtopic["subtopic"]] = subtopic
@@ -42,9 +42,9 @@ class SubjectService:
     subjects = {}
     subtopics = {}
 
-    def load_subjects(self):
+    async def load_subjects(self):
         logging.info("start load synopses")
-        self.subjects, self.subtopics = get_subjects_from_api()
+        self.subjects, self.subtopics = await get_subjects_from_api()
         logging.info("finish load synopses")
 
     def get_subject_topics(self, topic_name):

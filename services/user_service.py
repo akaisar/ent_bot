@@ -1,7 +1,7 @@
 import json
 import logging
 
-import requests
+import requests_async as requests
 
 from config import Config
 from data.models import Student, Teacher, User, Tutor
@@ -27,12 +27,12 @@ def json_to_obj(json_obj, user_type):
 # MARK: API interaction
 
 
-def get_users_from_api():
+async def get_users_from_api():
     logging.info("Start load users from api")
     users = {}
     for user_type in Config.USER_DB:
         logging.info(f"Start load {user_type}")
-        r = requests.get(Config.API_URL + user_type)
+        r = await requests.get(Config.API_URL + user_type)
         data = json.loads(r.text)
         objects = {}
         for json_obj in data:
@@ -44,12 +44,12 @@ def get_users_from_api():
 
 
 async def post_user_to_api(user, user_type):
-    r = requests.post(Config.API_URL + user_type, json=user.to_json())
+    r = await requests.post(Config.API_URL + user_type, json=user.to_json())
     return json.loads(r.text)
 
 
 async def put_args_to_api(user, user_type):
-    r = requests.put(Config.API_URL + user_type, json=user.to_json())
+    r = await requests.put(Config.API_URL + user_type, json=user.to_json())
 
 
 class UserService:
@@ -92,8 +92,8 @@ class UserService:
             return True
         return False
 
-    def get_users(self):
-        self.users = get_users_from_api()
+    async def get_users(self):
+        self.users = await get_users_from_api()
 
     def user_exists(self, telegram_id):
         return telegram_id in self.users[Config.USERS]
@@ -180,7 +180,7 @@ class UserService:
 
     @staticmethod
     async def get_student_stats(telegram_id):
-        r = requests.get(Config.API_URL+Config.STUDENTS+"/"+str(telegram_id)+"/stats")
+        r = await requests.get(Config.API_URL+Config.STUDENTS+"/"+str(telegram_id)+"/stats")
         logging.info("Get user stats: "+str(r))
         json_obj = json.loads(r.text)
         return json_obj

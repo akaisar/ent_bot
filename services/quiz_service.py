@@ -1,7 +1,7 @@
 from config import Config
 from data.models import Quiz, MyEncoder
 from ast import literal_eval
-import requests
+import requests_async as requests
 import json
 import random
 import logging
@@ -40,9 +40,9 @@ def get_image_quizzes_from_file():
 # MARK: API interaction
 
 
-def get_quizzes_from_api():
+async def get_quizzes_from_api():
     logging.info("Start load quizzes from api")
-    r = requests.get(Config.API_URL+Config.QUIZ_DB)
+    r = await requests.get(Config.API_URL+Config.QUIZ_DB)
     data = json.loads(r.text)
     quizzes = {}
     quiz_topic = {}
@@ -57,7 +57,7 @@ def get_quizzes_from_api():
     return quizzes, quiz_topic
 
 
-def post_quiz_to_api(quiz):
+async def post_quiz_to_api(quiz):
     r = requests.post(Config.API_URL+Config.QUIZ_DB, json=quiz.to_json())
     logging.info(r)
 
@@ -70,8 +70,8 @@ class QuizService:
 
     # MARK: Load quizzes to cash
 
-    def load_quizzes(self):
-        self.quizzes, self.quiz_topic = get_quizzes_from_api()
+    async def load_quizzes(self):
+        self.quizzes, self.quiz_topic = await get_quizzes_from_api()
 
     # MARK: Post quiz to api
 
