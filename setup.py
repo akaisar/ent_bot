@@ -575,7 +575,6 @@ async def on_startup(dp):
 def main():
     x = threading.Thread(target=load_db)
     x.start()
-    # executor.start_polling(dp, skip_updates=True)
     start_webhook(
         dispatcher=dp,
         webhook_path=Config.WEBHOOK_PATH,
@@ -587,4 +586,5 @@ def main():
 
 
 # if __name__ == "__main__":
-#     main()
+#     load_db()
+#     executor.start_polling(dp, skip_updates=True)

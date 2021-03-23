@@ -22,7 +22,8 @@ def subtopic_json_to_obj(json_obj):
 
 
 async def get_subjects_from_api():
-    data = json.loads(await requests.get(Config.API_URL+Config.SUBJECTS_DB).text)
+    r = await requests.get(Config.API_URL+Config.SUBJECTS_DB)
+    data = json.loads(r.text)
     subjects = {}
     for json_subject in data:
         subject = subject_json_to_obj(json_subject)
@@ -30,8 +31,8 @@ async def get_subjects_from_api():
     subtopics = {}
     for topic_name, subject in subjects.items():
         for subtopic_id in subject.subtopics:
-            json_subtopic = json.loads(await requests.get(
-                Config.API_URL+Config.SUBTOPIC_DB+'/'+str(subtopic_id)).text)[0]
+            r = await requests.get(Config.API_URL+Config.SUBTOPIC_DB+'/'+str(subtopic_id))
+            json_subtopic = json.loads(r.text)[0]
             subtopic = subtopic_json_to_obj(json_subtopic)
             subtopics[json_subtopic["subtopic"]] = subtopic
             subtopics[json_subtopic["id"]] = subtopic
