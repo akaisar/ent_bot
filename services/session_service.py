@@ -26,9 +26,9 @@ class SessionService:
         session = Session(telegram_id=telegram_id, topic_name=topic_name, quiz_ids=quiz_ids, results=[])
         self.sessions[telegram_id] = session
 
-    def post_session(self, telegram_id, results):
+    async def post_session(self, telegram_id, results):
         self.sessions[telegram_id].results = results
-        post_session(session=self.sessions[telegram_id])
+        await post_session(session=self.sessions[telegram_id])
         self.sessions.pop(telegram_id)
 
     def have_active_session(self, telegram_id):

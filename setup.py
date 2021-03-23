@@ -369,7 +369,7 @@ async def start_new_session(message: types.Message, state:FSMContext):
 async def cancel_session(message: types.Message):
     telegram_id = message.from_user.id
     results = user_s.get_quiz_results(telegram_id)
-    session_s.post_session(telegram_id=telegram_id, results=results)
+    await session_s.post_session(telegram_id=telegram_id, results=results)
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.RESULTS_MESSAGE,
                                    args=calc_results(results=results))
 
@@ -443,7 +443,7 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                                    , number=quizzes_number)
     if is_quiz_end:
         results = user_s.get_quiz_results(telegram_id)
-        session_s.post_session(telegram_id=telegram_id, results=results)
+        await session_s.post_session(telegram_id=telegram_id, results=results)
         await send_message_and_buttons(quiz_answer, buttons=[Data.MAIN_MENU_BUTTON], state=Data.RESULTS_MESSAGE,
                                        args=calc_results(results=results))
     else:
@@ -585,6 +585,6 @@ def main():
     )
 
 
-# if __name__ == "__main__":
-#     load_db()
-#     executor.start_polling(dp, skip_updates=True)
+if __name__ == "__main__":
+    load_db()
+    executor.start_polling(dp, skip_updates=True)
