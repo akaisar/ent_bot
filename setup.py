@@ -532,6 +532,13 @@ async def delete_student_from_teacher_result(message: types.Message, state: FSMC
     await send_students_like_button(message, state=Data.TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE)
 
 
+# MARK: About us
+
+@dp.message_handler(lambda message: local.check_text([Data.ABOUT_US_BUTTON], text=message.text)[0])
+async def about_us(message: types.Message):
+    await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.ABOUT_US_MESSAGE)
+
+
 # MARK: Teacher referrals
 
 @dp.message_handler(lambda message: local.check_text([Data.TEACHER_REFERRAL_BUTTON], message.text)[0] and

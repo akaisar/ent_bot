@@ -69,13 +69,15 @@ class Data(Enum):
     RIGHT_KAZ = 67
     IN_DEVELOPMENT_MESSAGE = 68
     ENGLISH_LANGUAGE = 69
+    ABOUT_US_BUTTON = 70
+    ABOUT_US_MESSAGE = 71
 
 
 class Localization:
     options = ["A)", "B)", "C)", "D)", "E)", "F)", "G)", "H)"]
     languages = [Data.KAZAKH, Data.RUSSIAN]
     student_main_menu_buttons = [Data.START_QUIZ_BUTTON, Data.ADD_TEACHER_BUTTON, Data.STUDENT_STATS_BUTTON,
-                                 Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON, Data.PROFILE_BUTTON]
+                                 Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON, Data.PROFILE_BUTTON, Data.ABOUT_US_BUTTON]
     teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON, Data.TEACHER_REFERRAL_BUTTON,
                                  Data.PROFILE_BUTTON]
     user_state_buttons = [Data.TEACHER, Data.STUDENT]
@@ -84,6 +86,14 @@ class Localization:
     profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.MAIN_MENU_BUTTON]
     synopses_subjects = [Data.MAIN_MENU_BUTTON]
     data = {
+        Data.ABOUT_US_MESSAGE: {
+            Data.RUSSIAN: "Разработчики: @IplayerLG @ExaltedA\nСообщить об ошибках: @IplayerLG @ExaltedA",
+            Data.KAZAKH: "Әзірлеушілер: @IplayerLG @ExaltedA\nҚате туралы хабарлау: @IplayerLG @ExaltedA"
+        },
+        Data.ABOUT_US_BUTTON: {
+            Data.RUSSIAN: "О нас",
+            Data.KAZAKH: "Біз тұралы"
+        },
         Data.IN_DEVELOPMENT_MESSAGE: {
             Data.RUSSIAN: "Скоро",
             Data.KAZAKH: "Жакында"
