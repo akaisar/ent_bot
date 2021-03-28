@@ -20,45 +20,32 @@ class Config:
     SUBJECTS_DB = "subjects"
     SUBTOPIC_DB = "subtopic"
     USER_STATE = ["Teacher", "Student", "Tutor"]
-    SUBJECT_NAMES = ["Қазақ тілі", "Русский язык all", "География ru", "География kz", "Ағылшын тілі ru",
-                     "Ағылшын тілі kz", "Қазақстан тарихы kz", "Қазақстан тарихы ru", "Биология ru",
-                     "Биология kz", "Дүние жүзі тарихы ru", "Дүние жүзі тарихы kz", "Әдебиет ru", "Әдебиет kz",
-                     "Математика rus", "Физика rus"]
+    SUBJECT_NAMES = ["Химия ru", "Биология ru", "География ru", "Всемирная история ru", "Право ru",
+                     "Русский язык", "Русская литература", "Английский язык", "Математика ru",
+                     "Физика ru"]
     DATA_SUBJECT_NAME = {
-        Data.PHYS_RUS: "Физика rus",
-        Data.MATH_RUS: "Математика rus",
-        Data.KAZAKH_LANGUAGE: "Қазақ тілі",
-        Data.RUSSIAN_LANGUAGE: "Русский язык all",
+        Data.RIGHT_RUS: "Право ru",
+        Data.CHEMISTRY_RUS: "Химия ru",
         Data.BIOLOGY_RUS: "Биология ru",
-        Data.BIOLOGY_KAZ: "Биология kz",
-        Data.KAZ_HISTORY_KAZ: "Қазақстан тарихы kz",
-        Data.KAZ_HISTORY_RUS: "Қазақстан тарихы ru",
         Data.GEOGRAPHY_RUS: "География ru",
-        Data.GEOGRAPHY_KAZ: "География kz",
-        Data.ENGLISH_KAZ: "Ағылшын тілі kz",
-        Data.ENGLISH_RUS: "Ағылшын тілі ru",
-        Data.WORLD_HISTORY_RUS: "Дүние жүзі тарихы ru",
-        Data.WORLD_HISTORY_KAZ: "Дүние жүзі тарихы kz",
-        Data.LITERATURE_KAZ: "Әдебиет kz",
-        Data.LITERATURE_RUS: "Әдебиет ru"
+        Data.WORLD_HISTORY_RUS: "Всемирная история ru",
+        Data.RUSSIAN_LANGUAGE: "Русский язык",
+        Data.LITERATURE_RUS: "Русская литература",
+        Data.ENGLISH_LANGUAGE: "Английский язык",
+        Data.MATH_RUS: "Математика ru",
+        Data.PHYS_RUS: "Физика ru",
     }
     SUBJECT_NAME_DATA = {
-        "Физика rus": Data.PHYS_RUS,
-        "Математика rus": Data.MATH_RUS,
-        "Қазақ тілі": Data.KAZAKH_LANGUAGE,
-        "Русский язык all": Data.RUSSIAN_LANGUAGE,
-        "География ru": Data.GEOGRAPHY_RUS,
-        "География kz": Data.GEOGRAPHY_KAZ,
-        "Ағылшын тілі ru": Data.ENGLISH_RUS,
-        "Ағылшын тілі kz": Data.ENGLISH_KAZ,
+        "Право ru": Data.RIGHT_RUS,
+        "Химия ru": Data.CHEMISTRY_RUS,
         "Биология ru": Data.BIOLOGY_RUS,
-        "Биология kz": Data.BIOLOGY_KAZ,
-        "Қазақстан тарихы kz": Data.KAZ_HISTORY_KAZ,
-        "Қазақстан тарихы ru": Data.KAZ_HISTORY_RUS,
-        "Дүние жүзі тарихы kz": Data.WORLD_HISTORY_KAZ,
-        "Дүние жүзі тарихы ru": Data.WORLD_HISTORY_RUS,
-        "Әдебиет kz": Data.LITERATURE_KAZ,
-        "Әдебиет ru": Data.LITERATURE_RUS
+        "География ru": Data.GEOGRAPHY_RUS,
+        "Всемирная история ru": Data.WORLD_HISTORY_RUS,
+        "Русский язык": Data.RUSSIAN_LANGUAGE,
+        "Русская литература": Data.LITERATURE_RUS,
+        "Английский язык": Data.ENGLISH_LANGUAGE,
+        "Математика ru": Data.MATH_RUS,
+        "Физика ru": Data.PHYS_RUS,
     }
     QUIZ_DB = "questions"
     SESSION_DB = "sessions"

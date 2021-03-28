@@ -73,8 +73,8 @@ async def send_student_stats(message, telegram_id, stats, language, index=None):
 
 async def send_quiz(quiz, telegram_id, is_poll):
     quiz_number = len(user_s.quiz_results[telegram_id])+1
-    if quiz.topic in local.image_subjects:
-        with open(f"data/images/{quiz.question}.png", 'rb') as f:
+    if quiz.is_image:
+        with open(f"data/images/{Config.DATA_SUBJECT_NAME[quiz.topic]}/{quiz.question}.png", 'rb') as f:
             photo = f
             await bot.send_photo(chat_id=telegram_id, photo=photo)
         options = local.options[:int(quiz.options[0])]
@@ -86,28 +86,38 @@ async def send_quiz(quiz, telegram_id, is_poll):
             msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]",
                                       is_anonymous=False, options=options, type="quiz",
                                       correct_option_id=correct_option_id)
-    elif len(quiz.question) <= 300:
-        options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
-                                                            correct_option_id=quiz.correct_option_id)
-        if is_poll:
-            msg = await bot.send_poll(chat_id=telegram_id,
-                                      question=f"[{quiz_number}:{quizzes_number}]\n" + quiz.question,
-                                      is_anonymous=False, options=options)
-        else:
-            msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question,
-                                      is_anonymous=False, options=options, type="quiz",
-                                      correct_option_id=correct_option_id)
     else:
         options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
-                                                            correct_option_id=quiz.correct_option_id,)
-        await bot.send_message(chat_id=telegram_id, text=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question)
-        if is_poll:
-            msg = await bot.send_poll(chat_id=telegram_id, question=" ",
-                                      is_anonymous=False, options=options)
+                                                            correct_option_id=quiz.correct_option_id)
+        is_options_correct = True
+        for option in options:
+            if len(option) > 100:
+                is_options_correct = False
+        if len(quiz.question) <= 300 and is_options_correct:
+            if is_poll:
+                msg = await bot.send_poll(chat_id=telegram_id,
+                                          question=f"[{quiz_number}:{quizzes_number}]\n" + quiz.question,
+                                          is_anonymous=False, options=options)
+            else:
+                msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question,
+                                          is_anonymous=False, options=options, type="quiz",
+                                          correct_option_id=correct_option_id)
         else:
-            msg = await bot.send_poll(chat_id=telegram_id, question=" ",
-                                      is_anonymous=False, options=options, type="quiz",
-                                      correct_option_id=correct_option_id)
+            text = f"[{quiz_number}:{quizzes_number}]\n"+quiz.question + "\n"
+            options2 = local.options[:len(options)]
+            for index in range(len(options)):
+                option = options[index]
+                text += options2[index] + " " + option
+                if text[-1] != "\n":
+                    text += "\n"
+            await bot.send_message(chat_id=telegram_id, text=text)
+            if is_poll:
+                msg = await bot.send_poll(chat_id=telegram_id, question=" ",
+                                          is_anonymous=False, options=options2)
+            else:
+                msg = await bot.send_poll(chat_id=telegram_id, question=" ",
+                                          is_anonymous=False, options=options2, type="quiz",
+                                          correct_option_id=correct_option_id)
     sleep(time_between_questions)
     quiz_s.set_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)

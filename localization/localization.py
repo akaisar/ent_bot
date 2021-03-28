@@ -54,8 +54,6 @@ class Data(Enum):
     SUBJECT_INFO_MESSAGE = 50
     DELETE_STUDENT_FROM_TEACHER_BUTTON = 51
     DELETE_STUDENT_FROM_TEACHER_MESSAGE = 52
-    ENGLISH_RUS = 53
-    ENGLISH_KAZ = 54
     WORLD_HISTORY_RUS = 55
     WORLD_HISTORY_KAZ = 56
     LITERATURE_RUS = 57
@@ -66,6 +64,11 @@ class Data(Enum):
     MATH_RUS = 62
     PHYS_RUS = 63
     CHOOSE_SUBTOPIC_MESSAGE = 64
+    CHEMISTRY_RUS = 65
+    RIGHT_RUS = 66
+    RIGHT_KAZ = 67
+    IN_DEVELOPMENT_MESSAGE = 68
+    ENGLISH_LANGUAGE = 69
 
 
 class Localization:
@@ -76,25 +79,34 @@ class Localization:
     teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON, Data.TEACHER_REFERRAL_BUTTON,
                                  Data.PROFILE_BUTTON]
     user_state_buttons = [Data.TEACHER, Data.STUDENT]
-    subjects = [Data.KAZ_HISTORY_KAZ, Data.KAZ_HISTORY_RUS, Data.KAZAKH_LANGUAGE, Data.RUSSIAN_LANGUAGE,
-                Data.GEOGRAPHY_KAZ, Data.GEOGRAPHY_RUS, Data.BIOLOGY_KAZ, Data.BIOLOGY_RUS, Data.ENGLISH_KAZ,
-                Data.ENGLISH_RUS, Data.WORLD_HISTORY_KAZ, Data.WORLD_HISTORY_RUS, Data.LITERATURE_KAZ,
-                Data.LITERATURE_RUS, Data.MATH_RUS, Data.PHYS_RUS]
-    image_subjects = [Data.MATH_RUS, Data.PHYS_RUS]
+    subjects = [Data.CHEMISTRY_RUS, Data.BIOLOGY_RUS, Data.GEOGRAPHY_RUS, Data.WORLD_HISTORY_RUS, Data.RIGHT_RUS,
+                Data.RUSSIAN_LANGUAGE, Data.LITERATURE_RUS, Data.ENGLISH_LANGUAGE, Data.MATH_RUS, Data.PHYS_RUS]
     profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.MAIN_MENU_BUTTON]
-    synopses_subjects = [Data.KAZ_HISTORY_KAZ, Data.MAIN_MENU_BUTTON]
+    synopses_subjects = [Data.MAIN_MENU_BUTTON]
     data = {
+        Data.IN_DEVELOPMENT_MESSAGE: {
+            Data.RUSSIAN: "Скоро",
+            Data.KAZAKH: "Жакында"
+        },
+        Data.RIGHT_RUS: {
+            Data.RUSSIAN: "ЧОП (рус. яз.)",
+            Data.KAZAKH: "АҚҚ (о. т.)"
+        },
+        Data.CHEMISTRY_RUS: {
+            Data.RUSSIAN: "Химия (рус. яз.)",
+            Data.KAZAKH: "Химия (о. т.)"
+        },
         Data.CHOOSE_SUBTOPIC_MESSAGE: {
             Data.RUSSIAN: "Выберите тему",
             Data.KAZAKH: "Теманы таңданыз"
         },
         Data.PHYS_RUS: {
-            Data.RUSSIAN: "Физика (рус. яз.) (demo)",
-            Data.KAZAKH: "Физика (о. т.) (demo)"
+            Data.RUSSIAN: "Физика (рус. яз.)",
+            Data.KAZAKH: "Физика (о. т.)"
         },
         Data.MATH_RUS: {
-            Data.RUSSIAN: "Математика (рус. яз.) (demo)",
-            Data.KAZAKH: "Математика (о. т.) (demo)"
+            Data.RUSSIAN: "Математика (рус. яз.)",
+            Data.KAZAKH: "Математика (о. т.)"
         },
         Data.TEACHER_DELETE_STUDENT_UN_SUCCESS_MESSAGE: {
             Data.RUSSIAN: "Вы ввели не верные данные попробуйте снова",
@@ -124,13 +136,9 @@ class Localization:
             Data.RUSSIAN: "Всемирная история (рус. яз.)",
             Data.KAZAKH: "Всемирная история (о. т.)"
         },
-        Data.ENGLISH_KAZ: {
-            Data.RUSSIAN: "Английский язык (каз. яз.)",
-            Data.KAZAKH: "Ағылшын тілі (қаз. т.)"
-        },
-        Data.ENGLISH_RUS: {
-            Data.RUSSIAN: "Английский язык (рус. яз.)",
-            Data.KAZAKH: "Ағылшын тілі (о. т.)"
+        Data.ENGLISH_LANGUAGE: {
+            Data.RUSSIAN: "Английский язык",
+            Data.KAZAKH: "Ағылшын тілі"
         },
         Data.DELETE_STUDENT_FROM_TEACHER_MESSAGE: {
             Data.RUSSIAN: "Выберите какого ученика вы хотите удалить",

@@ -11,10 +11,10 @@ def json_to_obj(json_obj):
     return Quiz(
         topic=Config.SUBJECT_NAME_DATA[json_obj["topic"]],
         quiz_id=json_obj["quiz_id"],
-        question=json_obj["question"],
+        question=json_obj["question"].split("$")[0],
         options=json_obj["options"].split("$"),
         correct_option_id=json_obj["correct_option_id"],
-        is_image=False
+        is_image=json_obj["is_image"]
     )
 
 
@@ -33,6 +33,8 @@ def get_image_quizzes_from_file():
             quizzes[topic] = {}
         quizzes[topic][quiz_id] = json_to_obj(json_obj=json_obj)
         quiz_topic[quiz_id] = topic
+        logging.info(quizzes[topic][quiz_id].is_image)
+        # print(quizzes[topic][quiz_id].is_image)
     logging.info("Finish load quizzes from api")
     return quizzes, quiz_topic
 
