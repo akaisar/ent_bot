@@ -19,11 +19,13 @@ class Config:
     USER_DB = [USERS, TEACHERS, STUDENTS]
     SUBJECTS_DB = "subjects"
     SUBTOPIC_DB = "subtopic"
+    QUIZ_SET_DB = "quizset"
     USER_STATE = ["Teacher", "Student", "Tutor"]
     SUBJECT_NAMES = ["Химия ru", "Биология ru", "География ru", "Всемирная история ru", "Право ru",
                      "Русский язык", "Русская литература", "Английский язык", "Математика ru",
-                     "Физика ru"]
+                     "Физика ru", "Грамотность чтения ru", "История Казахстана ru", "Математическая грамотность ru"]
     DATA_SUBJECT_NAME = {
+        Data.ENT: "Ент",
         Data.RIGHT_RUS: "Право ru",
         Data.CHEMISTRY_RUS: "Химия ru",
         Data.BIOLOGY_RUS: "Биология ru",
@@ -34,6 +36,9 @@ class Config:
         Data.ENGLISH_LANGUAGE: "Английский язык",
         Data.MATH_RUS: "Математика ru",
         Data.PHYS_RUS: "Физика ru",
+        Data.READING_LITERACY_RUS: "Грамотность чтения ru",
+        Data.KAZ_HISTORY_RUS: "История Казахстана ru",
+        Data.MATH_LITERACY_RUS: "Математическая грамотность ru"
     }
     SUBJECT_NAME_DATA = {
         "Право ru": Data.RIGHT_RUS,
@@ -46,6 +51,9 @@ class Config:
         "Английский язык": Data.ENGLISH_LANGUAGE,
         "Математика ru": Data.MATH_RUS,
         "Физика ru": Data.PHYS_RUS,
+        "Грамотность чтения ru": Data.READING_LITERACY_RUS,
+        "История Казахстана ru": Data.KAZ_HISTORY_RUS,
+        "Математическая грамотность ru": Data.MATH_LITERACY_RUS,
     }
     QUIZ_DB = "questions"
     SESSION_DB = "sessions"

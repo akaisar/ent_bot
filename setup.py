@@ -16,8 +16,8 @@ from aiogram.utils.executor import start_webhook
 from services import quiz_service, user_service, session_service, subject_service
 from config import Config
 from localization.localization import Localization, Data
-from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates, SynopsesStates, SessionStates
-
+from utils import calc_results, ReferralStates, UserNameStates, TeacherStatStates, SynopsesStates, SessionStates, \
+    SubjectsStates
 
 logging.basicConfig(level=logging.INFO)
 # bot initialization
@@ -29,7 +29,6 @@ quiz_s = quiz_service.QuizService()
 session_s = session_service.SessionService()
 subject_s = subject_service.SubjectService()
 local = Localization()
-quizzes_number = 20
 time_between_questions = 0.75
 
 
@@ -71,8 +70,11 @@ async def send_student_stats(message, telegram_id, stats, language, index=None):
 
 # MARK: Send quiz
 
-async def send_quiz(quiz, telegram_id, is_poll):
-    quiz_number = len(user_s.quiz_results[telegram_id])+1
+async def send_quiz(quiz, telegram_id, is_poll, quizzes_number):
+    if quiz_s.is_in_quiz_set(quiz.quiz_id):
+        if user_s.is_send_text(telegram_id):
+            msg = await bot.send_message(chat_id=telegram_id, text=quiz_s.get_quiz_set_text(quiz.quiz_id))
+    quiz_number = len(user_s.quiz_results[telegram_id]) + 1
     if quiz.is_image:
         with open(f"data/images/{Config.DATA_SUBJECT_NAME[quiz.topic]}/{quiz.question}.png", 'rb') as f:
             photo = f
@@ -99,11 +101,12 @@ async def send_quiz(quiz, telegram_id, is_poll):
                                           question=f"[{quiz_number}:{quizzes_number}]\n" + quiz.question,
                                           is_anonymous=False, options=options)
             else:
-                msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]\n"+quiz.question,
+                msg = await bot.send_poll(chat_id=telegram_id,
+                                          question=f"[{quiz_number}:{quizzes_number}]\n" + quiz.question,
                                           is_anonymous=False, options=options, type="quiz",
                                           correct_option_id=correct_option_id)
         else:
-            text = f"[{quiz_number}:{quizzes_number}]\n"+quiz.question + "\n"
+            text = f"[{quiz_number}:{quizzes_number}]\n" + quiz.question + "\n"
             options2 = local.options[:len(options)]
             for index in range(len(options)):
                 option = options[index]
@@ -127,7 +130,7 @@ def get_poll_keyboard(buttons):
     poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for index in range(0, len(buttons), 2):
         if index != len(buttons) - 1:
-            poll_keyboard.row(buttons[index], buttons[index+1])
+            poll_keyboard.row(buttons[index], buttons[index + 1])
         else:
             poll_keyboard.add(buttons[index])
     return poll_keyboard
@@ -252,11 +255,11 @@ async def set_user_state_result(message: types.Message):
                                    args=[profile_info])
 
 
-# MARK: Set user name cancel
+# MARK: Cancel set profile
 
 @dp.message_handler(lambda message: local.check_text([Data.CANCEL_BUTTON], message.text)[0],
-                    state=UserNameStates.USER_NAME_STATE_0)
-async def cancel_set_user_name(message: types.Message, state: FSMContext):
+                    state=SubjectsStates.all_states + UserNameStates.all_states)
+async def cancel_set_profile(message: types.Message, state: FSMContext):
     telegram_id = message.from_user.id
     await state.finish()
     language = user_s.get_language(telegram_id)
@@ -288,6 +291,34 @@ async def set_user_name(message: types.Message):
     state = dp.current_state(user=telegram_id)
     await state.set_state(UserNameStates.USER_NAME_STATE_0)
     await send_message_and_buttons(message=message, buttons=[Data.CANCEL_BUTTON], state=Data.INPUT_NAME_MESSAGE)
+
+
+# MARK: Start ent
+
+@dp.message_handler(lambda message: local.check_text([Data.ENT_BUTTON], message.text)[0])
+async def start_ent(message: types.Message):
+    telegram_id = message.from_user.id
+    subject_1, subject_2 = user_s.get_student_subjects(telegram_id)
+    user_s.user_start_new_quiz(telegram_id)
+    user_s.set_quiz_type(telegram_id, True)
+    quiz_sets = quiz_s.get_quiz_sets(topic=Data.READING_LITERACY_RUS, quiz_number=15)
+    user_s.set_quiz_sets(telegram_id=telegram_id, quiz_sets=quiz_sets)
+    quiz_ids_reading = quiz_s.quiz_set_to_quiz_ids(quiz_sets, 20)
+    quiz_ids_history = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=Data.KAZ_HISTORY_RUS, number=15)
+    quiz_ids_math = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=Data.MATH_LITERACY_RUS, number=15)
+    quiz_ids_subject_1 = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=subject_1, number=20)
+    quiz_ids_subject_2 = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=subject_2, number=20)
+    print(quiz_ids_math)
+    quiz_ids = quiz_ids_history + quiz_ids_math + quiz_ids_reading + quiz_ids_subject_1 + quiz_ids_subject_2
+    quizzes_number = len(quiz_ids)
+    user_s.set_quiz_size(telegram_id, quizzes_number)
+    user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=telegram_id)
+    session_s.create_session(telegram_id=telegram_id, quiz_ids=quiz_ids, topic_name=Data.ENT)
+    await send_message_and_buttons(message=message, buttons=[Data.CANCEL_BUTTON],
+                                   state=Data.START_SESSION_MESSAGE, args=[message.text, quizzes_number])
+    await send_quiz(telegram_id=telegram_id, quiz=quiz_s.get_quiz_from_id(
+        quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)), is_poll=True,
+                    quizzes_number=quizzes_number)
 
 
 # MARK: Student main menu state
@@ -335,7 +366,6 @@ async def student_synopses_choose_subject(message: types.Message, state: FSMCont
     await message.answer(local.data[Data.CHOOSE_SUBTOPIC_MESSAGE][language], reply_markup=poll_keyboard)
 
 
-
 # MARK: Student synopses state
 
 @dp.message_handler(lambda message: local.check_text([Data.SYNOPSES_BUTTON], message.text)[0] and
@@ -354,22 +384,27 @@ async def choose_quiz_topic(message: types.Message, state: FSMContext):
     await send_message_and_buttons(message=message, buttons=local.subjects, state=Data.CHOOSE_TOPIC_MESSAGE)
 
 
-# MARK: Start new session
+# MARK: Start session
 
 @dp.message_handler(lambda message: local.check_text(local.subjects, message.text)[0] and
-                    user_s.is_student(telegram_id=message.from_user.id), state=SessionStates.SESSION_STATE_0)
-async def start_new_session(message: types.Message, state:FSMContext):
+                                    user_s.is_student(telegram_id=message.from_user.id),
+                    state=SessionStates.SESSION_STATE_0)
+async def start_new_session(message: types.Message, state: FSMContext):
+    quizzes_number = 20
     await state.finish()
     telegram_id = message.from_user.id
     topic_name = local.check_text(local.subjects, message.text)[1]
+    user_s.set_quiz_size(telegram_id, quizzes_number)
     user_s.user_start_new_quiz(message.from_user.id)
+    user_s.set_quiz_type(telegram_id, False)
     quiz_ids = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=topic_name, number=quizzes_number)
     user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=telegram_id)
     session_s.create_session(telegram_id=telegram_id, quiz_ids=quiz_ids, topic_name=topic_name)
     await send_message_and_buttons(message=message, buttons=[Data.CANCEL_BUTTON],
                                    state=Data.START_SESSION_MESSAGE, args=[message.text, quizzes_number])
     await send_quiz(telegram_id=telegram_id, quiz=quiz_s.get_quiz_from_id(
-        quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)), is_poll=False)
+        quiz_id=user_s.get_quiz_ids_for_user(telegram_id=message.from_user.id)), is_poll=False,
+                    quizzes_number=quizzes_number)
 
 
 # MARK: Cancel session
@@ -450,7 +485,7 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
                                                    is_option_correct=quiz_s.is_option_correct(
                                                        quiz_id=quiz_id,
                                                        option=quiz_answer.option_ids[0])
-                                                   , number=quizzes_number)
+                                                   , number=user_s.get_quiz_size(telegram_id))
     if is_quiz_end:
         results = user_s.get_quiz_results(telegram_id)
         await session_s.post_session(telegram_id=telegram_id, results=results)
@@ -459,7 +494,7 @@ async def handle_poll_answer(quiz_answer: types.PollAnswer):
     else:
         await send_quiz(telegram_id=telegram_id,
                         quiz=quiz_s.get_quiz_from_id(quiz_id=user_s.get_quiz_ids_for_user(telegram_id=telegram_id)),
-                        is_poll=False)
+                        is_poll=user_s.get_quiz_type(telegram_id), quizzes_number=user_s.get_quiz_size(telegram_id))
 
 
 # MARK: Teacher Menu
@@ -548,6 +583,37 @@ async def teacher_referrals(message: types.Message):
     referral = user_s.get_teacher_referral(telegram_id)
     await send_message_and_buttons(message, buttons=[Data.MAIN_MENU_BUTTON], state=Data.TEACHER_REFERRAL_MESSAGE)
     await message.answer(referral)
+
+
+# MARK: Subject set state
+
+@dp.message_handler(state=SubjectsStates.all_states)
+async def subject_set_state(message: types.Message, state: FSMContext):
+    telegram_id = message.from_user.id
+    language = user_s.get_language(telegram_id)
+    if dp.current_state(user=telegram_id, chat=telegram_id) == SubjectsStates.SUBJECTS_STATE_0:
+        await state.set_state(SubjectsStates.SUBJECTS_STATE_1)
+        subject = local.check_text(local.subjects, message.text)[1]
+        user_s.set_student_subjects(telegram_id, 1, subject)
+        await send_message_and_buttons(message, buttons=local.subjects + [Data.CANCEL_BUTTON],
+                                       state=Data.CHOOSE_TOPIC_MESSAGE)
+    else:
+        await state.finish()
+        subject = local.check_text(local.subjects, message.text)[1]
+        user_s.set_student_subjects(telegram_id, 2, subject)
+        profile_info = user_s.get_user_profile(telegram_id=telegram_id, user_language=language)
+        await send_message_and_buttons(message, buttons=local.profile, state=Data.PROFILE_MESSAGE,
+                                       args=[profile_info])
+
+
+# MARK: Subject profile
+
+@dp.message_handler(lambda message: local.check_text([Data.SUBJECT_BUTTON], message.text)[0])
+async def subject_profile(message: types.Message, state: FSMContext):
+    telegram_id = message.from_user.id
+    await state.set_state(SubjectsStates.SUBJECTS_STATE_0)
+    await send_message_and_buttons(message, buttons=local.subjects + [Data.CANCEL_BUTTON],
+                                   state=Data.CHOOSE_TOPIC_MESSAGE)
 
 
 # MARK: Profile

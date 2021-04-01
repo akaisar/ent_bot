@@ -25,6 +25,12 @@ class Subject:
         self.subtopics = subtopics
 
 
+class QuizSet:
+    def __init__(self, text, quizzes):
+        self.quizzes = quizzes
+        self.text = text
+
+
 class Quiz:
     type: str = "question"
 
@@ -71,6 +77,11 @@ class User(AbstractUser):
 
 
 class Student(AbstractUser):
+    def __init__(self, telegram_id, subject_1=Data.MATH_RUS, subject_2=Data.GEOGRAPHY_RUS):
+        super().__init__(telegram_id)
+        self.subject_1 = subject_1
+        self.subject_2 = subject_2
+    
     def to_json(self):
         return {
             "telegram_id": self.telegram_id,

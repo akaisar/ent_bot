@@ -71,21 +71,50 @@ class Data(Enum):
     ENGLISH_LANGUAGE = 69
     ABOUT_US_BUTTON = 70
     ABOUT_US_MESSAGE = 71
+    SUBJECT_BUTTON = 72
+    ENT_BUTTON = 73
+    ENT_MESSAGE = 74
+    ENT = 75
+    READING_LITERACY_RUS = 76
+    READING_LITERACY_KAZ = 77
+    MATH_LITERACY_RUS = 78
+    MATH_LITERACY_KAZ = 79
+    SINGLE_QUIZ = 80
+    COMPLEX_QUIZ = 81
 
 
 class Localization:
     options = ["A)", "B)", "C)", "D)", "E)", "F)", "G)", "H)"]
     languages = [Data.KAZAKH, Data.RUSSIAN]
-    student_main_menu_buttons = [Data.START_QUIZ_BUTTON, Data.ADD_TEACHER_BUTTON, Data.STUDENT_STATS_BUTTON,
-                                 Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON, Data.PROFILE_BUTTON, Data.ABOUT_US_BUTTON]
+    student_main_menu_buttons = [Data.START_QUIZ_BUTTON, Data.ENT_BUTTON, Data.ADD_TEACHER_BUTTON,
+                                 Data.STUDENT_STATS_BUTTON, Data.SYNOPSES_BUTTON, Data.PAYMENT_BUTTON,
+                                 Data.PROFILE_BUTTON, Data.ABOUT_US_BUTTON]
     teacher_main_menu_buttons = [Data.PAYMENT_BUTTON, Data.TEACHER_STATS_BUTTON, Data.TEACHER_REFERRAL_BUTTON,
                                  Data.PROFILE_BUTTON]
     user_state_buttons = [Data.TEACHER, Data.STUDENT]
     subjects = [Data.CHEMISTRY_RUS, Data.BIOLOGY_RUS, Data.GEOGRAPHY_RUS, Data.WORLD_HISTORY_RUS, Data.RIGHT_RUS,
-                Data.RUSSIAN_LANGUAGE, Data.LITERATURE_RUS, Data.ENGLISH_LANGUAGE, Data.MATH_RUS, Data.PHYS_RUS]
-    profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.MAIN_MENU_BUTTON]
+                Data.RUSSIAN_LANGUAGE, Data.LITERATURE_RUS, Data.ENGLISH_LANGUAGE, Data.MATH_RUS, Data.PHYS_RUS,
+                Data.KAZ_HISTORY_RUS, Data.MATH_LITERACY_RUS]
+    profile = [Data.LANGUAGE_BUTTON, Data.USER_STATE_BUTTON, Data.USER_NAME_BUTTON, Data.SUBJECT_BUTTON,
+               Data.MAIN_MENU_BUTTON]
     synopses_subjects = [Data.MAIN_MENU_BUTTON]
     data = {
+        Data.MATH_LITERACY_RUS: {
+            Data.RUSSIAN: "Математическая грамотность (рус. яз.)",
+            Data.KAZAKH: "Математикалык сауаттылық (о. т.)"
+        },
+        Data.ENT_MESSAGE: {
+            Data.RUSSIAN: "Тест начался",
+            Data.KAZAKH: "Тест Басталды"
+        },
+        Data.ENT_BUTTON: {
+            Data.RUSSIAN: "Начать ЕНТ",
+            Data.KAZAKH: "ЕНТ бастау"
+        },
+        Data.SUBJECT_BUTTON: {
+            Data.RUSSIAN: "Предметы",
+            Data.KAZAKH: "Пәндер"
+        },
         Data.ABOUT_US_MESSAGE: {
             Data.RUSSIAN: "Разработчики: @IplayerLG @ExaltedA\nСообщить об ошибках: @IplayerLG @ExaltedA",
             Data.KAZAKH: "Әзірлеушілер: @IplayerLG @ExaltedA\nҚате туралы хабарлау: @IplayerLG @ExaltedA"

@@ -56,8 +56,41 @@ class UserService:
     users = {}
 
     quiz_results = {}
+    quiz_type = {}
     quiz_ids = {}
+    quiz_size = {}
+    quiz_sets = {}
+    quiz_set_index = {}
 
+    def set_quiz_sets(self, telegram_id, quiz_sets):
+        self.quiz_sets[telegram_id] = quiz_sets
+        self.quiz_set_index[telegram_id] = 0
+
+    def is_send_text(self, telegram_id):
+        index = self.quiz_set_index[telegram_id]
+        quiz_id = 0
+        cnt = 0
+        for quiz_set in self.quiz_sets[telegram_id]:
+            for index2 in range(len(quiz_set.quizzes)):
+                if cnt == index:
+                    if index2 == 0:
+                        self.quiz_set_index[telegram_id] = index + 1
+                        return True
+                    self.quiz_set_index[telegram_id] = index + 1
+                    return False
+                cnt += 1
+
+    def set_quiz_type(self, telegram_id, type):
+        self.quiz_type[telegram_id] = type
+
+    def get_quiz_type(self, telegram_id):
+        return self.quiz_type[telegram_id]
+
+    def set_quiz_size(self, telegram_id, size):
+        self.quiz_size[telegram_id] = size
+
+    def get_quiz_size(self, telegram_id):
+        return self.quiz_size[telegram_id]
     # MARK: User quiz interaction
 
     def get_quiz_ids_for_user(self, telegram_id):
@@ -80,6 +113,7 @@ class UserService:
             return True
         else:
             return False
+
 
     # MARK: Users
 
@@ -178,6 +212,19 @@ class UserService:
     def get_teacher_referral(self, telegram_id):
         return self.users[Config.TEACHERS][telegram_id].referral
 
+    # MARK: Get student subjects
+
+    def get_student_subjects(self, telegram_id):
+        return self.users[Config.STUDENTS][telegram_id].subject_1, self.users[Config.STUDENTS][telegram_id].subject_2
+
+    # MARK: Set student subjects
+
+    def set_student_subjects(self, telegram_id, subject_num, subject):
+        if subject_num == 1:
+            self.users[Config.STUDENTS][telegram_id].subject_1 = subject
+        else:
+            self.users[Config.STUDENTS][telegram_id].subject_2 = subject
+
     @staticmethod
     async def get_student_stats(telegram_id):
         r = await requests.get(Config.API_URL+Config.STUDENTS+"/"+str(telegram_id)+"/stats")
@@ -190,6 +237,11 @@ class UserService:
         name = self.get_name(telegram_id)
         language = self.get_language(telegram_id)
         user_state = self.get_user_state(telegram_id)
+        subject_1, subject_2 = self.get_student_subjects(telegram_id)
         return f"{local.data[Data.USER_NAME_BUTTON][user_language]}: {name}\n" \
                f"{local.data[Data.LANGUAGE_BUTTON][user_language]}: {local.data[language][user_language]}\n" \
-               f"{local.data[Data.USER_STATE_BUTTON][user_language]}: {local.data[user_state][user_language]}"
+               f"{local.data[Data.USER_STATE_BUTTON][user_language]}: {local.data[user_state][user_language]}\n" \
+               f"{local.data[Data.SUBJECT_BUTTON][user_language]}: {local.data[subject_1][user_language]}, " \
+               f"{local.data[subject_2][user_language]} "
+
+

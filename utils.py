@@ -25,5 +25,10 @@ class SynopsesStates(StatesGroup):
     SYNOPSES_STATE_0 = State()
 
 
+class SubjectsStates(StatesGroup):
+    SUBJECTS_STATE_0 = State()
+    SUBJECTS_STATE_1 = State()
+
+
 class SessionStates(StatesGroup):
     SESSION_STATE_0 = State()
