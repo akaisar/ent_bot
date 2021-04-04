@@ -10,7 +10,15 @@ from localization.localization import Localization as local, Data
 
 def json_to_obj(json_obj, user_type):
     if user_type == Config.STUDENTS:
-        return Student(telegram_id=json_obj["telegram_id"])
+        if json_obj["subject_1"] == '':
+            subject_1 = Data.MATH_RUS
+        else:
+            subject_1 = Config.SUBJECT_NAME_DATA[json_obj["subject_1"]]
+        if json_obj["subject_2"] == '':
+            subject_2 = Data.PHYS_RUS
+        else:
+            subject_2 = Config.SUBJECT_NAME_DATA[json_obj["subject_2"]]
+        return Student(telegram_id=json_obj["telegram_id"], subject_1=subject_1, subject_2=subject_2)
     elif user_type == Config.USERS:
         return User(telegram_id=json_obj["telegram_id"], selected_language=Config.LANGUAGE_DATA[
             json_obj["selected_language"]],
@@ -50,6 +58,8 @@ async def post_user_to_api(user, user_type):
 
 async def put_args_to_api(user, user_type):
     r = await requests.put(Config.API_URL + user_type, json=user.to_json())
+    print(r)
+    print(r.text)
 
 
 class UserService:
@@ -219,11 +229,12 @@ class UserService:
 
     # MARK: Set student subjects
 
-    def set_student_subjects(self, telegram_id, subject_num, subject):
+    async def set_student_subjects(self, telegram_id, subject_num, subject):
         if subject_num == 1:
             self.users[Config.STUDENTS][telegram_id].subject_1 = subject
         else:
             self.users[Config.STUDENTS][telegram_id].subject_2 = subject
+        await put_args_to_api(user=self.users[Config.STUDENTS][telegram_id], user_type=Config.STUDENTS)
 
     @staticmethod
     async def get_student_stats(telegram_id):

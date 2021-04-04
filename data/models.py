@@ -34,13 +34,13 @@ class QuizSet:
 class Quiz:
     type: str = "question"
 
-    def __init__(self, topic, quiz_id, question, options, correct_option_id, is_image):
+    def __init__(self, topic, quiz_id, question, options, correct_option_ids, is_image):
         # Используем подсказки типов, чтобы было проще ориентироваться.
         self.topic: str = topic
         self.quiz_id: str = quiz_id  # ID викторины. Изменится после отправки от имени бота
         self.question: str = question  # Текст вопроса
         self.options: List[str] = [*options]  # "Распакованное" содержимое массива m_options в массив options
-        self.correct_option_id: int = correct_option_id  # ID правильного ответа
+        self.correct_option_ids: int = correct_option_ids  # ID правильного ответа
         self.owner: int = 0  # Владелец опроса
         self.message_id: int = 0  # Сообщение с викториной (для закрытия)
         self.is_image: bool = is_image
@@ -85,6 +85,8 @@ class Student(AbstractUser):
     def to_json(self):
         return {
             "telegram_id": self.telegram_id,
+            "subject_1": config.Config.DATA_SUBJECT_NAME[self.subject_1],
+            "subject_2": config.Config.DATA_SUBJECT_NAME[self.subject_2]
         }
 
 

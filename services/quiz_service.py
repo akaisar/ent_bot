@@ -13,7 +13,7 @@ def json_to_obj(json_obj):
         quiz_id=json_obj["quiz_id"],
         question=json_obj["question"].split("$")[0],
         options=json_obj["options"].split("$"),
-        correct_option_id=json_obj["correct_option_id"],
+        correct_option_ids=[int(i) for i in json_obj["correct_option_id"].split("$")],
         is_image=json_obj["is_image"]
     )
 
@@ -88,7 +88,7 @@ class QuizService:
     quizzes = {}
     quiz_topic = {}
     quizzes_ids_connection = {}
-    correct_option_id = {}
+    correct_option_ids = {}
     quiz_sets = {}
     quiz_set_topic = {}
     quiz_in_quiz_set = {}
@@ -145,11 +145,28 @@ class QuizService:
     def get_specified_number_of_quizzes_by_topic(self, topic_name, number):
         quiz_ids = []
         for quiz_id, quiz in self.quizzes[topic_name].items():
-            quiz_ids.append(quiz_id)
+            if not quiz.is_image:
+                if len(quiz.options) == 5:
+                    quiz_ids.append(quiz_id)
+            else:
+                if int(quiz.options[0]) == 5:
+                    quiz_ids.append(quiz_id)
         random.shuffle(quiz_ids)
         return quiz_ids[:min(number, len(quiz_ids))]
 
     # MARK: Quiz ids connection
+
+    def get_specified_number_of_mc_quizzes_by_topic(self, topic_name, number):
+        quiz_ids = []
+        for quiz_id, quiz in self.quizzes[topic_name].items():
+            if not quiz.is_image:
+                if len(quiz.options) > 5:
+                    quiz_ids.append(quiz_id)
+            else:
+                if int(quiz.options[0]) > 5:
+                    quiz_ids.append(quiz_id)
+        random.shuffle(quiz_ids)
+        return quiz_ids[:min(number, len(quiz_ids))]
 
     def connect_ids(self, new_id, old_id):
         self.quizzes_ids_connection[new_id] = old_id
@@ -162,19 +179,26 @@ class QuizService:
     # MARK: Check option
 
     def is_option_correct(self, option, quiz_id):
-        return self.correct_option_id[quiz_id] == option
+        if type(option) == type(int):
+            return self.correct_option_ids[quiz_id][0] == option
+        else:
+            return self.correct_option_ids[quiz_id] == option
 
     # MARK: Set correct option
 
-    def set_correct_option_id(self, quiz_id, option_id):
-        self.correct_option_id[quiz_id] = option_id
+    def set_correct_option_ids(self, quiz_id, option_ids):
+        self.correct_option_ids[quiz_id] = option_ids
 
     # MARK: Shuffle options
 
     @staticmethod
-    def shuffle_options(options, correct_option_id):
-        correct_option = options[correct_option_id]
+    def shuffle_options(options, correct_option_ids):
+        correct_options = []
+        for correct_option_id in correct_option_ids:
+            correct_options.append(options[correct_option_id])
         random.shuffle(options)
+        new_correct_option_ids = []
         for i in range(len(options)):
-            if options[i] == correct_option:
-                return options, i
+            if options[i] in correct_options:
+                new_correct_option_ids.append(i)
+        return options, new_correct_option_ids

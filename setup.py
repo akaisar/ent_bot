@@ -80,31 +80,35 @@ async def send_quiz(quiz, telegram_id, is_poll, quizzes_number):
             photo = f
             await bot.send_photo(chat_id=telegram_id, photo=photo)
         options = local.options[:int(quiz.options[0])]
-        correct_option_id = quiz.correct_option_id
+        correct_option_ids = quiz.correct_option_ids
         if is_poll:
+            allows_multiple_answers = len(options) > 5
             msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]",
-                                      is_anonymous=False, options=options)
+                                      is_anonymous=False, options=options,
+                                      allows_multiple_answers=allows_multiple_answers)
         else:
             msg = await bot.send_poll(chat_id=telegram_id, question=f"[{quiz_number}:{quizzes_number}]",
                                       is_anonymous=False, options=options, type="quiz",
-                                      correct_option_id=correct_option_id)
+                                      correct_option_id=correct_option_ids[0])
     else:
-        options, correct_option_id = quiz_s.shuffle_options(options=quiz.options,
-                                                            correct_option_id=quiz.correct_option_id)
+        options, correct_option_ids = quiz_s.shuffle_options(options=quiz.options,
+                                                             correct_option_ids=quiz.correct_option_ids)
         is_options_correct = True
         for option in options:
             if len(option) > 100:
                 is_options_correct = False
         if len(quiz.question) <= 300 and is_options_correct:
             if is_poll:
+                allows_multiple_answers = len(options) > 5
                 msg = await bot.send_poll(chat_id=telegram_id,
                                           question=f"[{quiz_number}:{quizzes_number}]\n" + quiz.question,
-                                          is_anonymous=False, options=options)
+                                          is_anonymous=False, options=options,
+                                          allows_multiple_answers=allows_multiple_answers)
             else:
                 msg = await bot.send_poll(chat_id=telegram_id,
                                           question=f"[{quiz_number}:{quizzes_number}]\n" + quiz.question,
                                           is_anonymous=False, options=options, type="quiz",
-                                          correct_option_id=correct_option_id)
+                                          correct_option_id=correct_option_ids[0])
         else:
             text = f"[{quiz_number}:{quizzes_number}]\n" + quiz.question + "\n"
             options2 = local.options[:len(options)]
@@ -115,14 +119,16 @@ async def send_quiz(quiz, telegram_id, is_poll, quizzes_number):
                     text += "\n"
             await bot.send_message(chat_id=telegram_id, text=text)
             if is_poll:
+                allows_multiple_answers = len(options) > 5
                 msg = await bot.send_poll(chat_id=telegram_id, question=" ",
-                                          is_anonymous=False, options=options2)
+                                          is_anonymous=False, options=options2,
+                                          allows_multiple_answers=allows_multiple_answers)
             else:
                 msg = await bot.send_poll(chat_id=telegram_id, question=" ",
                                           is_anonymous=False, options=options2, type="quiz",
-                                          correct_option_id=correct_option_id)
+                                          correct_option_id=correct_option_ids[0])
     sleep(time_between_questions)
-    quiz_s.set_correct_option_id(quiz_id=msg.poll.id, option_id=correct_option_id)
+    quiz_s.set_correct_option_ids(quiz_id=msg.poll.id, option_ids=correct_option_ids)
     quiz_s.connect_ids(new_id=msg.poll.id, old_id=quiz.quiz_id)
 
 
@@ -307,9 +313,12 @@ async def start_ent(message: types.Message):
     quiz_ids_history = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=Data.KAZ_HISTORY_RUS, number=15)
     quiz_ids_math = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=Data.MATH_LITERACY_RUS, number=15)
     quiz_ids_subject_1 = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=subject_1, number=20)
+    quiz_ids_subject_1_2 = quiz_s.get_specified_number_of_mc_quizzes_by_topic(topic_name=subject_1, number=1)
     quiz_ids_subject_2 = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=subject_2, number=20)
     print(quiz_ids_math)
-    quiz_ids = quiz_ids_history + quiz_ids_math + quiz_ids_reading + quiz_ids_subject_1 + quiz_ids_subject_2
+    print(len(quiz_ids_math))
+    quiz_ids = quiz_ids_subject_1_2 + quiz_ids_history + quiz_ids_math + quiz_ids_reading + quiz_ids_subject_1 + \
+               quiz_ids_subject_2
     quizzes_number = len(quiz_ids)
     user_s.set_quiz_size(telegram_id, quizzes_number)
     user_s.set_quiz_ids_for_user(quiz_ids=quiz_ids, telegram_id=telegram_id)
@@ -591,16 +600,17 @@ async def teacher_referrals(message: types.Message):
 async def subject_set_state(message: types.Message, state: FSMContext):
     telegram_id = message.from_user.id
     language = user_s.get_language(telegram_id)
-    if dp.current_state(user=telegram_id, chat=telegram_id) == SubjectsStates.SUBJECTS_STATE_0:
+    current_state = await state.get_state()
+    if current_state == SubjectsStates.SUBJECTS_STATE_0.state:
         await state.set_state(SubjectsStates.SUBJECTS_STATE_1)
         subject = local.check_text(local.subjects, message.text)[1]
-        user_s.set_student_subjects(telegram_id, 1, subject)
+        await user_s.set_student_subjects(telegram_id, 1, subject)
         await send_message_and_buttons(message, buttons=local.subjects + [Data.CANCEL_BUTTON],
                                        state=Data.CHOOSE_TOPIC_MESSAGE)
     else:
         await state.finish()
         subject = local.check_text(local.subjects, message.text)[1]
-        user_s.set_student_subjects(telegram_id, 2, subject)
+        await user_s.set_student_subjects(telegram_id, 2, subject)
         profile_info = user_s.get_user_profile(telegram_id=telegram_id, user_language=language)
         await send_message_and_buttons(message, buttons=local.profile, state=Data.PROFILE_MESSAGE,
                                        args=[profile_info])
