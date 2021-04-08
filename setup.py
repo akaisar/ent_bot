@@ -313,11 +313,10 @@ async def start_ent(message: types.Message):
     quiz_ids_history = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=Data.KAZ_HISTORY_RUS, number=15)
     quiz_ids_math = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=Data.MATH_LITERACY_RUS, number=15)
     quiz_ids_subject_1 = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=subject_1, number=20)
-    quiz_ids_subject_1_2 = quiz_s.get_specified_number_of_mc_quizzes_by_topic(topic_name=subject_1, number=1)
     quiz_ids_subject_2 = quiz_s.get_specified_number_of_quizzes_by_topic(topic_name=subject_2, number=20)
     print(quiz_ids_math)
     print(len(quiz_ids_math))
-    quiz_ids = quiz_ids_subject_1_2 + quiz_ids_history + quiz_ids_math + quiz_ids_reading + quiz_ids_subject_1 + \
+    quiz_ids = quiz_ids_history + quiz_ids_math + quiz_ids_reading + quiz_ids_subject_1 + \
                quiz_ids_subject_2
     quizzes_number = len(quiz_ids)
     user_s.set_quiz_size(telegram_id, quizzes_number)
@@ -636,6 +635,7 @@ async def profile(message: types.Message):
     profile_info = user_s.get_user_profile(telegram_id=telegram_id, user_language=language)
     await send_message_and_buttons(message, buttons=local.profile, state=Data.PROFILE_MESSAGE,
                                    args=[profile_info])
+
 
 
 # MARK: Default response
